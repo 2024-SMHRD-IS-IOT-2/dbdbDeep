@@ -166,8 +166,8 @@ def wakeMachine(access_key, keyword_file_path, model_file_path, sensitivity):
             
             
             
-def userInputSentence(silence_duration=2, silence_threshold=50) :
-    recorder = PvRecorder(device_index=0, frame_length=512)
+def userInputSentence(device_idx, inputWaitTIme=10, silence_duration=2, silence_threshold=40) :
+    recorder = PvRecorder(device_index=device_idx, frame_length=512)
     audio = []
     
     silenceDur = silence_duration
@@ -178,23 +178,24 @@ def userInputSentence(silence_duration=2, silence_threshold=50) :
     
     try:
         recorder.start()
+        silenceStart = time.time() + inputWaitTIme
+        print("talking : receiving user Input...")
 
         while True:
             frame = recorder.read()
-            audio.extend(frame)
             frameChk = np.mean(np.sqrt(abs(np.array(frame))))
-
+            
+            audio.extend(frame)
             # 현재 시간
             silenceEnd = time.time()
 
-            ## 문장 시작
+            ## 문장 시작 체크
             if not isTalking and frameChk > silenceThr :
                 print("talking : user talking start")
                 isTalking = True
                 silenceStart = time.time()
-
             ## 이야기중임. 
-            elif isTalking and frameChk > silenceThr  :
+            elif isTalking and (frameChk > silenceThr)  :
                 silenceStart = time.time()
 
 
@@ -202,12 +203,17 @@ def userInputSentence(silence_duration=2, silence_threshold=50) :
             if silenceEnd-silenceStart >= silenceDur and isTalking:
                 print(f"talking : silence for {silenceDur} sec. end Sentence recording")
                 break
+            ## 10초동안 인풋 안받음.
+            elif silenceEnd-silenceStart >= 0 and not isTalking:
+                return False
 
         ## wav 파일로 사용자 음성 저장
         recorder.stop()
         with wave.open('./userSentence.wav', 'w') as f:
             f.setparams((1, 2, 16000, 512, "NONE", "NONE"))
             f.writeframes(struct.pack("h" * len(audio), *audio))
+            
+        return True
 
     except Exception as e:
         print("error =", e)
