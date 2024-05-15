@@ -1,0 +1,10 @@
+SpeechRecognition
+pvrecorder
+numpy
+pvporcupine
+python-dotenv
+langchain
+langchain-openai
+langchain_core
+sounddevice
+soundfile

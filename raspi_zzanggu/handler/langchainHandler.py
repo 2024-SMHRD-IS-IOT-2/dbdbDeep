@@ -17,7 +17,6 @@ class ConvGenThread(Thread):
     def target(self):
         while True:
             #!TODO conversation generation 처리
-            temp = []
             if not self.input_queue.empty():
                 flag, data = self.input_queue.get_nowait()
                 self.set_status(flag)
@@ -25,11 +24,9 @@ class ConvGenThread(Thread):
                     break
                 # AI 처리
                 ans = ""
-                temp.append(ans)
+                self.push_output(flag, ans)
                 ##
-                self.event.wait()
-                for text in temp:
-                    self.push_output(flag, text)
+                # self.event.wait()
                 self.set_status(THREAD_STATUS.DONE)
                 self.push_output(THREAD_STATUS.DONE, "")
 
