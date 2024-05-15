@@ -5,6 +5,9 @@ import time
 import sounddevice as sd
 import soundfile as sf
 
+import pyaudio  
+import wave  
+
 ## typecast TTS 오디오 생성 쓰레드
 ## 계속 돌아감.
 ## 인풋 큐 : flag, emotion, text
@@ -23,19 +26,19 @@ class GenerateOutputAudioThread(Thread):
                 flag, emo, text = self.input_queue.get_nowait()
                 self.set_status(flag)
                 if flag == THREAD_STATUS.FINISH:
+                    self.push_output(flag, "", "")
                     break
                 
                 # 대화 종료시 파일카운터 초기화
-                if flag == THREAD_STATUS.DONE :
+                elif flag == THREAD_STATUS.DONE :
                     self.cnt = 0
                     print("sending Done")
                     self.push_output(flag, "", "")
-                    self.event.wait()
                 
                 ## TTS 작업
                 elif flag == THREAD_STATUS.RUNNING :
                     filename = f"./wav/ttsOut{self.cnt}.wav"
-                    # self.do_tts(text,filename,emo)
+                    self.do_tts(text,filename,emo)
                     self.push_output(flag, emo, filename)
                     self.cnt+=1
                      
@@ -101,6 +104,7 @@ class PlayAudioThread(Thread):
                     data, fs = sf.read(filename, dtype='float32')  
                     time.sleep(0.5) ## 문장 사이사이 숨쉴 틈을..
                     # TODO : 아두이노 시리얼로 감정 보내기
+
                     print("play audio ", filename)
                     sd.play(data, fs)
                     status = sd.wait()  # Wait until file is done playing

@@ -17,19 +17,18 @@ def main():
                                keyword_file_path=os.environ['PORCUPINE_KEYWORD_FILE_PATH'],
                                model_file_path=os.environ['PORCUPINE_MODEL_FILE_PATH'],
                                sensitivity=float(os.environ['PORCUPINE_SENSITIVITY']))  
-    # taskClassifier = TaskClassifier()  ## 분류 llm 객체
-    # convGen = ConvGenThread(event)  ## 대화생성 llm 객체
+    taskClassifier = TaskClassifier(temp=0.5, max_tokens=200)  ## 분류 llm 객체
+    convGen = ConvGenThread(event, temp=1.2, max_tokens=500)  ## 대화생성 llm 객체
     generateOutputAudio = GenerateOutputAudioThread(event=event,
                                                     actor_id=os.environ['TYPECAST_ACTOR_ID'], 
                                                     api_key=os.environ['TYPECAST_API_KEY']) ## 출력오디오 생성 객체
     playAudio = PlayAudioThread(event)  ## 오디오 출력 객체
-
     # emotionModel = EmotionModelThread(event)
-
-    # convGen.set_output_queue(generateOutputAudio.input_queue)
+    
+    convGen.set_output_queue(generateOutputAudio.input_queue)
     generateOutputAudio.set_output_queue(playAudio.input_queue)
 
-    # convGen.start()
+    convGen.start()
     # emotionModel.start()
     generateOutputAudio.start()
     playAudio.start()
@@ -46,76 +45,77 @@ def main():
         # inputHandle.recognize_keyword()
 
         ## wakeup sound 
-        ws.Beep(500, 1000)
+        ws.Beep(500, 500)
         ## TODO : 비프음 대신 대답파일로 교체. 
         ## TODO : arduino serial 신호 전송 (normal)
     
 
-    
-        ## 유저 음성 받기 !! 완료 !!
-        # userInput, user_input_text, user_input_audio = inputHandle.get_user_input(filename='./wav/userSentence.wav',
-        #                                                                               inputWaitTIme=10, 
-        #                                                                               silence_duration=2, 
-        #                                                                               silence_threshold=40)
+        ############### 대화 사이클
+        while True :
 
-        ## TTS TEST 
-        task = TASK.CONVERATION
-        userInput = True
-        user_input_text1 = "테스트용 인풋 입니다."
-        user_input_text2 = "테스트용 인풋 두번째입니다."
-        user_input_text3 = "테스트용 인풋 세번째입니다."
-        
-        ## happy-123, angry-1234, sad-1234, normal-1234
-        generateOutputAudio.push_input(THREAD_STATUS.RUNNING, "happy-3", user_input_text1)
-        generateOutputAudio.push_input(THREAD_STATUS.RUNNING, "happy-3", user_input_text2)
-        generateOutputAudio.push_input(THREAD_STATUS.RUNNING, "happy-3", user_input_text3)
-        generateOutputAudio.push_input(THREAD_STATUS.DONE, "", "")
-
-
-        
-        ## 유저가 음성을 받았을 때
-        if userInput :
-            # 백그라운드 쓰레드에서 감정분석, 대화생성
-            # emotionModel.push_input(THREAD_STATUS.RUNNING, user_input_text, user_input_audio)
-            # convGen.push_input(THREAD_STATUS.RUNNING, user_input_text)
-
-            # 랭체인으로 음성 문자열 작업 분류
-            # task = taskClassifier.classify(user_input_text) 
-
-            ## 대화로 분류됐을 시 오디오 출력
-            ## convGen-> tts, 
-            if task == TASK.CONVERATION:
-
-                
-                ## 오디오 쓰레드 열어서 음성 출력
-                event.set()
-                while playAudio.get_status() == THREAD_STATUS.RUNNING:
-                    pass
-                event.clear()
-                
-
-                isRunning = False  ## TEST
-
-            # elif task == TASK.MUSIC_RECOMMEND:
-            #     playAudio.clear_input()
-            #     while emotionModel.get_status() == THREAD_STATUS.RUNNING:
-            #         pass
-            #     flag, music_file = emotionModel.output_queue.get_nowait()
-                # ! TODO music_file 재생
-
-            ## elif 스마트홈 컨트롤
+            ## 유저 음성 받기 !! 완료 !!
+            # userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(filename='./wav/userSentence.wav',
+            #                                                                               inputWaitTIme=10, 
+            #                                                                               silence_duration=2, 
+            #                                                                               silence_threshold=40)
             
-            # elif 유저시나리오 음악 조작
+            ## 테스트 유저음성
+            userInputIn, user_input_text, user_input_audio = True, "넌 요즘 머하고 있니." , "./wav/userSentence.wav"
+            
+            ## 일정 시간동안 말 안했을떄. 아웃.
+            if not userInputIn :
+                ## TODO : arduino serial 신호 전송 (off / sleep)
+                break
+            
+            ## 유저가 음성을 받았을 때
+            else :
+                # 백그라운드 쓰레드에서 감정분석, 대화생성(대답파일생성까지)
+                # emotionModel.push_input(THREAD_STATUS.RUNNING, user_input_text, user_input_audio)
+                convGen.push_input(THREAD_STATUS.RUNNING, user_input_text)
+                convGen.push_input(THREAD_STATUS.DONE, "")
 
-            # isRunning = False
-            # break
+                # 랭체인으로 음성 문자열 작업 분류
+                task, arg = taskClassifier.classify(user_input_text) 
 
-    print("over")
-    # convGen.push_input(THREAD_STATUS.FINISH, "")
-    # convGen.finish()
-    # generateOutputAudio.finish()
-    # playAudio.finish()
-    # emotionModel.finish()
+                ## 대화로 분류됐을 시 준비돼있는 오디오 출력
+                if task == TASK.CONVERSATION:
+                    print("conversation", arg)
+
+                    ## 오디오 쓰레드 열어서 음성 출력
+                    event.set()
+                    while playAudio.get_status() == THREAD_STATUS.RUNNING:
+                        pass
+                    event.clear()
+                    print("conv done")
+
+                elif task == TASK.MUSIC_RECOMMEND:
+                    print("music recommendation", arg)
+                    
+                    # ! TODO music_file 재생
+                    # playAudio.clear_input() # 오디오 클리어  
+                    # while emotionModel.get_status() == THREAD_STATUS.RUNNING:
+                    #     pass
+                    # flag, music_file = emotionModel.output_queue.get_nowait()
+
+                elif task == TASK.MUSIC_CTRL:
+                    print("music control", arg)
+                    ## TODO : 음악 조정
+
+                elif task == TASK.IOT_CTRL:
+                    print("IoT Control", arg)
+                    
+                
+                isRunning = False # TEST. while 종료
+                
+            break # TEST. 대화 사이클 while 종료
+            print("exit")
+
+
+        # convGen.push_input(THREAD_STATUS.FINISH, "", "")
+        # convGen.finish()
+        # generateOutputAudio.finish()
+        # playAudio.finish()
+        # emotionModel.finish()
 
 
 if __name__ == "__main__":
@@ -124,7 +124,5 @@ if __name__ == "__main__":
     
     load_dotenv('./config/keys.env')
     
-    
     main()
-    print("over")
 
