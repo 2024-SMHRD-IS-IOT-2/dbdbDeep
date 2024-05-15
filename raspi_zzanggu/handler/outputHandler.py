@@ -5,9 +5,6 @@ import time
 import sounddevice as sd
 import soundfile as sf
 
-import pyaudio  
-import wave  
-
 ## typecast TTS 오디오 생성 쓰레드
 ## 계속 돌아감.
 ## 인풋 큐 : flag, emotion, text
