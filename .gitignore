@@ -1,2 +1,4 @@
 config
 raspi_zzanggu/config
+*.pyc
+__pycache__/
