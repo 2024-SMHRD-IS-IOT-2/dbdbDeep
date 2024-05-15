@@ -23,12 +23,14 @@ class ConvGenThread(Thread):
                 if flag == THREAD_STATUS.FINISH:
                     break
                 # AI 처리
+                emo = ""
                 ans = ""
-                self.push_output(flag, ans)
+                
+                self.push_output(flag, emo, ans)
                 ##
                 # self.event.wait()
                 self.set_status(THREAD_STATUS.DONE)
-                self.push_output(THREAD_STATUS.DONE, "")
+                self.push_output(THREAD_STATUS.DONE, "", "")
 
 
 class TaskClassifier:
