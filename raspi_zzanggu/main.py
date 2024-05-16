@@ -1,5 +1,5 @@
 from handler.langchainHandler import TaskClassifier, ConvGenThread, TASK
-from handler.outputHandler import GenerateOutputAudioThread, PlayAudioThread
+from handler.outputHandler import GenerateOutputAudioThread, PlayAudioThread, PlayAudio
 from handler.inputHandler import InputHandler
 from model.emotionModel import EmotionModelThread
 from threading import Event
@@ -8,6 +8,9 @@ import setup
 from dotenv import load_dotenv
 import os
 import winsound as ws
+import time
+import sounddevice as sd
+import soundfile as sf
 
 def main():
     
@@ -17,21 +20,22 @@ def main():
                                keyword_file_path=os.environ['PORCUPINE_KEYWORD_FILE_PATH'],
                                model_file_path=os.environ['PORCUPINE_MODEL_FILE_PATH'],
                                sensitivity=float(os.environ['PORCUPINE_SENSITIVITY']))  
-    taskClassifier = TaskClassifier(temp=0.5, max_tokens=200)  ## 분류 llm 객체
-    convGen = ConvGenThread(event, temp=1.2, max_tokens=500)  ## 대화생성 llm 객체
+    taskClassifier = TaskClassifier(api_key=os.environ['OPENAI_API_KEY_CLASS'], temp=0.5, max_tokens=100)  ## 분류 llm 객체
+    convGen = ConvGenThread(event, api_key=os.environ['OPENAI_API_KEY_CONV'], temp=1.2, max_tokens=100 )  ## 대화생성 llm 객체
     generateOutputAudio = GenerateOutputAudioThread(event=event,
                                                     actor_id=os.environ['TYPECAST_ACTOR_ID'], 
                                                     api_key=os.environ['TYPECAST_API_KEY']) ## 출력오디오 생성 객체
-    playAudio = PlayAudioThread(event)  ## 오디오 출력 객체
+    # playAudio = PlayAudioThread(event)  ## 오디오 출력 객체
+    playConvAudio = PlayAudio(generateOutputAudio.output_queue)
     # emotionModel = EmotionModelThread(event)
     
     convGen.set_output_queue(generateOutputAudio.input_queue)
-    generateOutputAudio.set_output_queue(playAudio.input_queue)
+    # generateOutputAudio.set_output_queue(playAudio.input_queue)
 
     convGen.start()
     # emotionModel.start()
     generateOutputAudio.start()
-    playAudio.start()
+    # playAudio.start()
     isRunning = True
     event.clear()
     
@@ -41,8 +45,11 @@ def main():
     while isRunning:
         
 
+        ## 기존 대화 리셋
+        convGen.reset_conversation()
+
         ## 키워드 인식 !! 완료 !!
-        # inputHandle.recognize_keyword()
+        inputHandle.recognize_keyword()
 
         ## wakeup sound 
         ws.Beep(500, 500)
@@ -54,13 +61,13 @@ def main():
         while True :
 
             ## 유저 음성 받기 !! 완료 !!
-            # userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(filename='./wav/userSentence.wav',
-            #                                                                               inputWaitTIme=10, 
-            #                                                                               silence_duration=2, 
-            #                                                                               silence_threshold=40)
+            userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(filename='./wav/userSentence.wav',
+                                                                                          inputWaitTIme=10, 
+                                                                                          silence_duration=2, 
+                                                                                          silence_threshold=40)
             
             ## 테스트 유저음성
-            userInputIn, user_input_text, user_input_audio = True, "넌 요즘 머하고 있니." , "./wav/userSentence.wav"
+            # userInputIn, user_input_text, user_input_audio = True, "넌 요즘 머하고 있니." , "./wav/userSentence.wav"
             
             ## 일정 시간동안 말 안했을떄. 아웃.
             if not userInputIn :
@@ -71,6 +78,8 @@ def main():
             else :
                 # 백그라운드 쓰레드에서 감정분석, 대화생성(대답파일생성까지)
                 # emotionModel.push_input(THREAD_STATUS.RUNNING, user_input_text, user_input_audio)
+                
+                event.set() ## 쓰레드 시작
                 convGen.push_input(THREAD_STATUS.RUNNING, user_input_text)
                 convGen.push_input(THREAD_STATUS.DONE, "")
 
@@ -79,18 +88,17 @@ def main():
 
                 ## 대화로 분류됐을 시 준비돼있는 오디오 출력
                 if task == TASK.CONVERSATION:
-                    print("conversation", arg)
+                    print("task == conversation", arg)
 
-                    ## 오디오 쓰레드 열어서 음성 출력
-                    event.set()
-                    while playAudio.get_status() == THREAD_STATUS.RUNNING:
-                        pass
-                    event.clear()
+                    ### 로직 변경 테스트
+                    # 오디오를 non thread 로.
+                    playConvAudio.play_all_file()
+                    
                     print("conv done")
 
                 elif task == TASK.MUSIC_RECOMMEND:
-                    print("music recommendation", arg)
-                    
+                    print("task == music recommendation", arg)
+                    playConvAudio.clear_input()
                     # ! TODO music_file 재생
                     # playAudio.clear_input() # 오디오 클리어  
                     # while emotionModel.get_status() == THREAD_STATUS.RUNNING:
@@ -98,24 +106,30 @@ def main():
                     # flag, music_file = emotionModel.output_queue.get_nowait()
 
                 elif task == TASK.MUSIC_CTRL:
-                    print("music control", arg)
+                    print("task == music control", arg)
+                    playConvAudio.clear_input()
                     ## TODO : 음악 조정
 
                 elif task == TASK.IOT_CTRL:
-                    print("IoT Control", arg)
+                    print("task == IoT Control", arg)
+                    playConvAudio.clear_input()
                     
-                
-                isRunning = False # TEST. while 종료
-                
-            break # TEST. 대화 사이클 while 종료
-            print("exit")
+                            
+            # break # TEST. 대화 사이클 while 종료
+        
+        print("exit conversation cycle")
+    
+        # break  # TEST. 메인 프로그램 loop 종료
 
-
-        # convGen.push_input(THREAD_STATUS.FINISH, "", "")
-        # convGen.finish()
-        # generateOutputAudio.finish()
-        # playAudio.finish()
-        # emotionModel.finish()
+    print("exit main loop")
+    ## 대기중인 쓰레드 종료
+    event.set()
+    convGen.push_input(THREAD_STATUS.FINISH, "")
+    convGen.finish()
+    generateOutputAudio.finish()
+    # # playAudio.finish()
+    # # emotionModel.finish()
+    print("thread all clear")
 
 
 if __name__ == "__main__":

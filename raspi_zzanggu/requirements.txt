@@ -1,6 +1,8 @@
+python
+numpy
+pandas
 SpeechRecognition
 pvrecorder
-numpy
 pvporcupine
 python-dotenv
 langchain
@@ -8,3 +10,12 @@ langchain-openai
 langchain_core
 sounddevice
 soundfile
+sqlalchemy
+pymysql
+re
+pinecone
+spotipy
+selenium
+librosa 0.10.2
+tqdm
+glob

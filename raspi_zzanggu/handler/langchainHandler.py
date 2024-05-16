@@ -13,20 +13,17 @@ class TASK(Enum):
     MUSIC_RECOMMEND = 3
     MUSIC_CTRL = 3
     
-
-
-
-
 ## gpt 대답생성 쓰레드
 ## 계속 돌아감.
 ## 인풋 큐 : flag, userSentence
 ## 아웃풋 큐 : flag, emotion, gptSentence
 class ConvGenThread(Thread, BaseCallbackHandler):
-    def __init__(self, event, temp = 1.2, max_tokens=500):
+    def __init__(self, event, api_key, temp = 1.2, max_tokens=500):
         super().__init__(target=self.target, event=event)
         
         self.conversation = ConversationChain(
             llm= ChatOpenAI(
+                    api_key=api_key,
                     temperature= temp, 
                     max_tokens = max_tokens,
                     model_name='gpt-4',
@@ -48,6 +45,7 @@ class ConvGenThread(Thread, BaseCallbackHandler):
     def target(self):
         while True:
             #!TODO conversation generation 처리
+            self.event.wait()
             if not self.input_queue.empty():
                 flag, sentence = self.input_queue.get_nowait()
                 self.set_status(flag)
@@ -56,15 +54,10 @@ class ConvGenThread(Thread, BaseCallbackHandler):
                     break
                 elif flag == THREAD_STATUS.DONE :
                     self.push_output(flag, "", "")
-                    break ##TEST
                     
                 elif flag == THREAD_STATUS.RUNNING:
                     self.conversation.predict(input=sentence)
                 
-                ##
-                # self.event.wait()
-                # self.set_status(THREAD_STATUS.DONE)
-                # self.push_output(THREAD_STATUS.DONE, "")
         
     ## 토큰 스트리밍 콜백
     def on_llm_new_token(self, token: str, **kwargs) -> None:
@@ -89,7 +82,7 @@ class ConvGenThread(Thread, BaseCallbackHandler):
             before you start talking, you will select your emotion from 
             this list [happy, sad, normal, angry]
             you will put emotion code in front of your answer.
-            make your answer brief.
+            don't create your answer too long.
             always end sentence with [. , ? !] nothing else
             
             ## -> normal
@@ -103,8 +96,9 @@ class ConvGenThread(Thread, BaseCallbackHandler):
 
 
 class TaskClassifier:
-    def __init__(self, temp=0.5, max_tokens=500):
+    def __init__(self, api_key, temp=0.5, max_tokens=300):
         self.classify_llm = ChatOpenAI(
+        api_key=api_key,
         temperature=temp, 
         max_tokens = max_tokens,
         model_name='gpt-4',
