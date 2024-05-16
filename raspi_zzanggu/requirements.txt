@@ -1,6 +1,6 @@
+numpy
 SpeechRecognition
 pvrecorder
-numpy
 pvporcupine
 python-dotenv
 langchain
@@ -8,3 +8,11 @@ langchain-openai
 langchain_core
 sounddevice
 soundfile
+sqlalchemy == 2.0.25
+pymysql
+pandas == 2.1.4
+pinecone == 4.0.0
+spotipy
+selenium == 4.20.0
+
+
