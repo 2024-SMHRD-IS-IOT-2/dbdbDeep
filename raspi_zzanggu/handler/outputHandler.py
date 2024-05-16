@@ -29,7 +29,7 @@ class GenerateOutputAudioThread(Thread):
                 # 대화 종료시 파일카운터 초기화
                 elif flag == THREAD_STATUS.DONE :
                     self.cnt = 0
-                    print("sending Done")
+                    print("audio creation Done. 쓰레드 대기모드로")
                     self.push_output(flag, "", "")
 
                     self.event.clear() #대화생성쓰레드, tts쓰레드 대기모드로
@@ -37,7 +37,8 @@ class GenerateOutputAudioThread(Thread):
                 ## TTS 작업
                 elif flag == THREAD_STATUS.RUNNING :
                     filename = f"./wav/ttsOut{self.cnt}.wav"
-                    self.do_tts(text,filename,emo)
+                    ## TEST : 미리 생성돼있는 넘들로 대신 출력
+                    # self.do_tts(text,filename,emo)
                     self.push_output(flag, emo, filename)
                     print("tts file created : ", filename)
                     self.cnt+=1
@@ -79,8 +80,14 @@ class PlayAudio:
     # 인풋 큐 클리어 함수 (대화가 아닐 시)
     def clear_input(self):
         while not self.input_queue.empty():
-            _, emo, filename = self.input_queue.get_nowait()
-            os.remove(filename)
+            flag, emo, filename = self.input_queue.get_nowait()
+            if flag == THREAD_STATUS.DONE :
+                break
+
+            try :
+                os.remove(filename)
+            except FileNotFoundError:
+                print("해당 파일을 찾을 수 없음.", filename)
 
     def play_all_file(self):
         while True:
@@ -97,12 +104,44 @@ class PlayAudio:
                     time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
                     # TODO : 아두이노 시리얼로 감정 보내기
 
-                    print("play audio ", filename)
+                    print("play conv audio ", filename)
                     sd.play(data, fs)
                     status = sd.wait()  # Wait until file is done playing
-                    os.remove(filename) # remove file after playing
+                    # os.remove(filename) # remove file after playing
                     time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
+
+    def play_file(self, filename):
+        data, fs = sf.read(filename, dtype='float32')  
+        # TODO : 아두이노 시리얼로 감정 보내기
+
+        print("play sound ", filename)
+        sd.play(data, fs)
+        status = sd.wait()  # Wait until file is done playing
+        os.remove(filename) # remove file after playing
+        time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
                     
+
+
+class HomeCtrl:
+    def __init__(self, addr) :
+        self.addr = addr
+
+    def requestCtrl(self, args) :
+        url = f"{self.addr}/homectrl"
+
+
+        r = requests.get(url=url, params=args)
+
+        print("args", args)
+        print(type(args))
+
+        if r.status_code == 200 :
+            print("success")
+            return r.status_code
+        else :
+            print('fail')
+            return r.status_code
+
 
 
 
