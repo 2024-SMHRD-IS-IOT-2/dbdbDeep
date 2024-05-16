@@ -38,7 +38,7 @@ class GenerateOutputAudioThread(Thread):
                 elif flag == THREAD_STATUS.RUNNING :
                     filename = f"./wav/ttsOut{self.cnt}.wav"
                     ## TEST : 미리 생성돼있는 넘들로 대신 출력
-                    # self.do_tts(text,filename,emo)
+                    self.do_tts(text,filename,emo)
                     self.push_output(flag, emo, filename)
                     print("tts file created : ", filename)
                     self.cnt+=1
@@ -107,7 +107,7 @@ class PlayAudio:
                     print("play conv audio ", filename)
                     sd.play(data, fs)
                     status = sd.wait()  # Wait until file is done playing
-                    # os.remove(filename) # remove file after playing
+                    os.remove(filename) # remove file after playing
                     time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
 
     def play_file(self, filename):

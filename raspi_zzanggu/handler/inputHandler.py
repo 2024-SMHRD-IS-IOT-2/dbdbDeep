@@ -19,10 +19,11 @@ class InputHandler:
         self.DEVICE_INDEX = -1
         for i, device in enumerate(PvRecorder.get_available_devices()):
             print('Device %d: %s' % (i, device))
-            if ("마이크" in device) and "MAONO" in device :
+            if "MAONO" in device :
                 self.DEVICE_INDEX = i
                 print(f"mic at index {i} detected")
                 break
+            
 
 
     
@@ -134,10 +135,11 @@ class InputHandler:
 
         recorder = PvRecorder(
             frame_length=porcupine.frame_length,
-            # device_index=args.audio_device_index
-            device_index = self.DEVICE_INDEX
+            device_index=args.audio_device_index
+#             device_index = self.DEVICE_INDEX
             
             )
+        self.DEVICE_INDEX = args.audio_device_index
         recorder.start()
 
         wav_file = None
@@ -226,19 +228,21 @@ class InputHandler:
             ## wav 파일 문자열로.
             r = sr.Recognizer()
             try :
+                print("test1")
                 audioFile = sr.AudioFile(filename)
                 with audioFile as source :
                     audio = r.record(source)
+                print("test3")
                 userInputString = r.recognize_google(audio, language='ko-KR')
-            except :
-                print("no input")
-            print("user input:",userInputString)
+                print("test2")
+                return True, userInputString, filename
+            except Exception as e :
+                print("error1 = ", e)
                 
-            return True, userInputString, filename
-
+                
         except Exception as e:
-            print("error =", e)
+            print("error2 =", e)
         finally:
             recorder.delete()
         
-        return text, audio
+        return False, "", ""

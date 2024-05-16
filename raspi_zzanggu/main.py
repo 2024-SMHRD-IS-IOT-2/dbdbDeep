@@ -1,18 +1,20 @@
-from handler.langchainHandler import TaskClassifier, ConvGenThread, TASK
-from handler.outputHandler import GenerateOutputAudioThread, PlayAudio, HomeCtrl
-from handler.inputHandler import InputHandler
-from model.emotionModel import EmotionModelThread
-from threading import Event
-from common.thread import THREAD_STATUS
-import setup
-from dotenv import load_dotenv
-import os
-import winsound as ws
+import subprocess, sys
 
 
 def main():
     
+    print("import")
+    from handler.langchainHandler import TaskClassifier, ConvGenThread, TASK
+    from handler.outputHandler import GenerateOutputAudioThread, PlayAudio, HomeCtrl
+    from handler.inputHandler import InputHandler
+    from model.analyzeModel import EmotionModelThread
+    from threading import Event
+    from common.thread import THREAD_STATUS
+    from dotenv import load_dotenv
+    import os
+    
     ## init
+    load_dotenv('./config/keys.env')
     event = Event()
     homeCtrl = HomeCtrl(os.environ['raspHomeIP'])
     inputHandle = InputHandler(access_key=os.environ['PORCUPINE_ACCESS_KEY'],
@@ -48,7 +50,6 @@ def main():
         inputHandle.recognize_keyword()
 
         ## wakeup sound 
-        ws.Beep(500, 500)
         ## TODO : 비프음 대신 대답파일로 교체. 
         ## TODO : arduino serial 신호 전송 (normal)
     
@@ -138,11 +139,10 @@ def main():
 
 
 if __name__ == "__main__":
-    ## install all requirements
-    # setup.inst_all_from_requirements("requirements.txt")
-    
-    load_dotenv('./config/keys.env')
-    
+
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", 'requirements.txt'])
+    print("all requirements installed")
+
     main()
 
 
