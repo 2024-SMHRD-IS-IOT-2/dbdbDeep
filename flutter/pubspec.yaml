@@ -43,6 +43,9 @@ dependencies:
   d_chart: ^2.6.9  #차트연결
   d_method: ^0.2.6
 
+  mysql1: ^0.20.0
+  mysql_client: ^0.0.27
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

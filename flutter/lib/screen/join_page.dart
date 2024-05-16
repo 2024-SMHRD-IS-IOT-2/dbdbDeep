@@ -1,7 +1,10 @@
+import 'package:final_project/model/member_model.dart';
+import 'package:final_project/screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:mysql_client/mysql_client.dart';
 
-final dio = Dio();
+
 
 class JoinPage extends StatelessWidget {
   const JoinPage({Key? key});
@@ -118,7 +121,7 @@ class JoinPage extends StatelessWidget {
             ),
 
             ElevatedButton(onPressed: (){
-              joinMember(input_id.text, input_pw.text, input_name.text, input_addr.text, input_tel.text, input_nick.text, input_birth.text);
+              joinMember(context, input_id.text, input_pw.text, input_name.text, input_addr.text, input_tel.text, input_nick.text, input_birth.text);
             }, child: Text('회원 가입'))
           ],
         ),
@@ -128,17 +131,40 @@ class JoinPage extends StatelessWidget {
 }
 
 //회원가입 메소드
-void joinMember(String id, String pw, String name, String addr, String tel, String nick, String birth) async {
-  String url = "http://119.200.31.99:8000/member/join";
-
-  // dio 패키지를 사용하여 get 요청을 보낸다
-  Response res = await dio.get(
-    url,
-    queryParameters: {'id':id, 'pw': pw, 'name':name, 'addr':addr, 'tel':tel, 'nick':nick, 'birth':birth},
+void joinMember(BuildContext context, String id, String pw, String name, String addr, String tel, String nick, String birth) async {
+  final conn = await MySQLConnection.createConnection(
+    host: 'project-db-campus.smhrd.com',
+    port: 3307,
+    userName: 'smhrd_dbdbDeep',
+    password: 'dbdb1234!',
+    databaseName: 'smhrd_dbdbDeep', // optional
   );
 
-  print('↓res.data');
-  print(res.data);
-  print('↓res.statusCode');
-  print(res.statusCode);
+  // 데이터베이스 연결
+  await conn.connect();
+
+  var result = await conn.execute(
+      "insert into TB_USERS values(:id, :pw, :name, :addr, :tel, :nick, :birth, NOW())",
+      {
+        "id": id,
+        "pw": pw,
+        "name": name,
+        "addr": addr,
+        "tel": tel,
+        "nick": nick,
+        "birth": birth
+      });
+
+  // 데이터베이스 연결 종료
+  await conn.close();
+
+  if (result.isNotEmpty) {
+    // 회원가입 성공 시 LoginPage로 이동
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
 }
+
+

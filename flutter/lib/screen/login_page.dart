@@ -1,13 +1,14 @@
-import 'package:dio/dio.dart';
 import 'package:final_project/bottom.dart';
 import 'package:final_project/model/member_model.dart';
 import 'package:final_project/screen/join_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mysql_client/mysql_client.dart';
 
 
-final dio = Dio();  //Dio전역변수화
-final storage = FlutterSecureStorage();  //사용자가 앱을 종료하거나 재부팅하더라도 데이터를 안전하게 보관할 수 있도록 해줌
+final storage = FlutterSecureStorage(); // 사용자가 앱을 종료하거나 재부팅하더라도 데이터를 안전하게 보관할 수 있도록 해줌
+
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -18,7 +19,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   TextEditingController idCon = TextEditingController();
-  //TextEditingController emailCon = TextEditingController();
   TextEditingController pwCon = TextEditingController();
 
   @override
@@ -39,61 +39,59 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextField(
                     controller: idCon,
                     decoration: InputDecoration(
-                        label: Row(
-                          children: [
-                            Icon(Icons.account_circle),
-                            Text(" 아이디 입력"),
-                          ],
-                        ),
-                        hintText: "example@example.com",
-                        hintStyle: TextStyle(color: Colors.grey[300])),
+                      label: Row(
+                        children: [
+                          Icon(Icons.account_circle),
+                          Text(" 아이디 입력"),
+                        ],
+                      ),
+                      hintText: "example@example.com",
+                      hintStyle: TextStyle(color: Colors.grey[300]),
+                    ),
                     keyboardType: TextInputType.emailAddress,
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
-                      controller: pwCon,
-                      decoration: InputDecoration(
-                        label: Row(
-                          children: [
-                            Icon(Icons.key),
-                            Text(" 비밀번호 입력"),
-                          ],
-                        ),
-                      )),
+                    controller: pwCon,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      label: Row(
+                        children: [
+                          Icon(Icons.key),
+                          Text(" 비밀번호 입력"),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueAccent),
-                        onPressed: () {
-                          login(idCon.text, pwCon.text, context); //로그인버튼 클릭시 값 보냄
-                        },
-                        child: Text('로그인하기')),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                      onPressed: () {
+                        login(idCon.text, pwCon.text, context); // 로그인 버튼 클릭 시 값 보냄
+                      },
+                      child: Text('로그인하기'),
+                    ),
                     ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey),
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_)=>JoinPage()));
-                        },
-                        child: Text('회원가입하기'))
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => JoinPage()));
+                      },
+                      child: Text('회원가입하기'),
+                    )
                   ],
                 ),
-                SizedBox(
-                  height: 40,
-                ),
+                SizedBox(height: 40),
                 Container(
                   color: Colors.grey[200],
                   width: double.infinity,
                   height: 2,
                 ),
-                SizedBox(
-                  height: 40,
-                ),
-
+                SizedBox(height: 40),
               ],
             ),
           ),
@@ -103,43 +101,42 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-//로그인 메소드
+// 로그인 메소드
 void login(id, pw, context) async {
-  String url = "http://119.200.31.99:8000/member/login";
+  final conn = await MySQLConnection.createConnection(
+    host: 'project-db-campus.smhrd.com',
+    port: 3307,
+    userName: 'smhrd_dbdbDeep',
+    password: 'dbdb1234!',
+    databaseName: 'smhrd_dbdbDeep', // optional
+  );
 
+  // 데이터베이스 연결
+  await conn.connect();
 
-  Response res = await dio.get(url, queryParameters: {'id': id, 'pw': pw});
+  var result = await conn.execute("SELECT * FROM TB_USERS WHERE USER_ID = :id AND USER_PW = :pw", {
+    "id": id,
+    "pw": pw,
+  });
 
+  // 데이터베이스 연결 종료
+  await conn.close();
 
-  //쿼리문까지 적용된 url print문으로 띄우기
-  print("↓res.realUri"); print(res.realUri);
-  print("↓res == null"); print(res == null);
+  if (result.isNotEmpty) {
+    var userRow = result.rows.first.assoc();
+    MemberModel user = MemberModel.fromJson(userRow);
 
-
-  var user = memberModelFromJson(res.data); //JSON 형식 MemberModel 객체의 리스트인 user로 변환
-  print('↓user'); print(user); //[Instance of 'MemberModel']
-
-  print(user[0].userId);
-  print(user[0].userPw);
-  print(user[0].userName);
-  print(user[0].userAddr);
-  print(user[0].userTel);
-  print(user[0].userNick);
-  print(user[0].userBirth);
-  print(user[0].joinedAt);
-
-
-  print('↓user.isEmpty'); print(user.isEmpty);
-
-
-//if(res.statusCode == 200 && res.data != null)
-  if(res.statusCode == 200 && !user.isEmpty) { //통신이 200이거나 res.data가 null이 아닐때
-    Navigator.pushAndRemoveUntil(context, MaterialPageRoute
-      (builder: (context)=>Bottom(member: user[0],)), (route) => false); //로그인성공시 Bottom() 페이지이동
-  }else{ //로그인실패시
+    // 로그인 성공 시 Bottom 페이지로 이동
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Bottom(member: user)),
+          (route) => false,
+    );
+  } else {
+    // 로그인 실패 시
+    print('로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.');
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("아이디 또는 패스워드가 잘못 되었습니다 "),)
+      SnackBar(content: Text("아이디 또는 패스워드가 잘못 되었습니다")),
     );
   }
-
 }

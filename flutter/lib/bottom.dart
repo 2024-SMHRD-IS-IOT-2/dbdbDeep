@@ -22,7 +22,7 @@ class _BottomState extends State<Bottom> {
     Week(),
     Today(),
     Smart_home(),
-    Mypage(member: widget.member),
+    Mypage(member: widget.member), //멤버 페이지 넘긴다
   ];
 
   String appBarTitle = '오늘의감정';
