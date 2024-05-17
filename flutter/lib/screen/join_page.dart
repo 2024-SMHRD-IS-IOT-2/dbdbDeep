@@ -155,6 +155,8 @@ void joinMember(BuildContext context, String id, String pw, String name, String 
         "birth": birth
       });
 
+  print("↓result"); print(result);
+
   // 데이터베이스 연결 종료
   await conn.close();
 

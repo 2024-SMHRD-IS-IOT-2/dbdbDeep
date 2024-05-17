@@ -1,218 +1,216 @@
 import 'package:final_project/screen/today/youtube.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:mysql_client/mysql_client.dart';
 
-
-
-// 주차별 그래프 페이지
 class Today extends StatelessWidget {
-  const Today({super.key});
+  const Today({Key? key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: dbConnector(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            List<Map<String, dynamic>> userDataList = snapshot.data ?? [];
+            if (userDataList.isEmpty) {
+              userDataList = [
+                {
+                  'EMOTION_VAL': '기본값1',
+                  'count': 0,
+                  'percentage': 0,
+                  'ranking': 0,
+                  'creation_date': '기본값2',
+                },
+              ];
+            }
 
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  '05월08일',  // 대상 날짜
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-
-
-              Card(   //1번카드 맨위
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                clipBehavior: Clip.antiAliasWithSaveLayer,
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
+                  children: userDataList.map((userData) {
+                    String message = '';
+                    switch (userData['EMOTION_VAL']) {
+                      case '평온':
+                        message = '평온입니다';
+                        break;
+                      case '기쁨':
+                        message = '기쁨입니다';
+                        break;
+                      case '놀라움':
+                        message = '놀라움입니다';
+                        break;
+                      case '공포':
+                        message = '공포입니다';
+                        break;
+                      case '슬픔':
+                        message = '슬픔입니다';
+                        break;
+                      case '화남':
+                        message = '화남입니다';
+                        break;
+                      default:
+                        message = '알 수 없는 감정입니다';
+                        break;
+                    }
 
-                    // Card 내부의 상단 이미지와 텍스트들
-                    Container(
-                      padding: const EdgeInsets.all(15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-
-                          Text(  //
-                            '슬픔 32%',
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Text(
+                            userData['creation_date'],
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
-
-
-
-
-
-                          const Text('슬플때는 목표를 설정하고 이를 달성하는 데 집중하는 것은 슬픔을 극복하는 데 도움이 됩니다. 작은 성취감을 느끼면서 긍정적인 에너지를 얻을 수 있습니다. 이러한 활동들을 통해 슬픔을 이겨내고 긍정적인 마음을 유지하세요'),
-                        ],
-                      ),
-                    ),
-
-                    // Divider를 추가하여 섹션을 구분, 선
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 15),
-                      child: const Divider(height: 5),  // 선 사이 간격
-                    ),
-
-                    Container(
-                      padding: const EdgeInsets.all(15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const Text('더보기'),
-                        ],
-                      ),
-                    ),
-
-                  ],
-                ),
-              ),
-
-
-
-              // 2번째 카드
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-
-                      SizedBox(height: 4), // 간격
-
-                      Text(  //
-                        '슬픔 32%',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      SizedBox(height: 8),
-
-                      Text( //
-                        '일주일 평균 감정 퍼센트',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      SizedBox(height: 5),
-
-                      Container(
-                        height: 190, // Week_bar_chart 높이 조정
-                        child: Youtube(), // Week_bar_chart를 불러오는 부분
-                      ),
-                      SizedBox(height: 15),
-                    ],
-                  ),
-                ),
-              ),
-
-              Container(height: 20), // 위아래 컨테이너 간격
-
-              // 2번째 카드
-              Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      padding: const EdgeInsets.all(15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text("Card Title", style: Theme.of(context).textTheme.headlineMedium),
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 10),
-                            child: Text("Sub title", style: Theme.of(context).textTheme.titleMedium),
-                          ),
-                          const Text('A divider is a thin line that groups content in lists and containers.'),
-                        ],
-                      ),
-                    ),
-                    // 커스텀 Divider
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 15),
-                      child: const Divider(
-                        color: Colors.blue,
-                        height: 20,
-                        thickness: 2,
-                        indent: 20,
-                        endIndent: 0,
-                      ),
-                    ),
-                    // 시간 버튼들
-                    Container(
-                      padding: const EdgeInsets.all(15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const Text("Tonight's availability",style : TextStyle(fontWeight: FontWeight.bold),),
-                          Container(height: 5),
-                          Row(
-                            children: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[300], elevation: 0,
-                                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
+                        Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.all(15),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text('오늘의 감정', style: TextStyle(fontSize: 10)),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '${userData['EMOTION_VAL']} ${userData['percentage']}%',
+                                      style: TextStyle(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 0),
+                                  ],
                                 ),
-                                child: const Text("5:30PM"),
-                                onPressed: (){},
                               ),
-                              Container(width: 8),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[300], elevation: 0,
-                                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
-                                ),
-                                child: const Text("7:30PM"),
-                                onPressed: (){},
+                              Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 10),
+                                child: const Divider(height: 1),
                               ),
-                              Container(width: 8),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[300], elevation: 0,
-                                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
+                              Container(
+                                padding: const EdgeInsets.all(15),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(message), // 감정에 따른 메시지 출력
+                                  ],
                                 ),
-                                child: const Text("8:00PM"),
-                                onPressed: (){},
                               ),
                             ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
+                          ),
+                        ),
+                        Container(height: 20),
+                        Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: 4),
+                                Text(
+                                  '추천 동영상',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                SizedBox(height: 7),
+                                Container(
+                                  height: 190,
+
+
+
+
+                                  child: Youtube(youtubeId: getYoutubeId(userData['EMOTION_VAL'])),
+                                ),
+                                SizedBox(height: 15),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(height: 35),
+                      ],
+                    );
+                  }).toList(),
                 ),
               ),
-
-              Container(height: 35),
-            ],
-          ),
-        ),
+            );
+          }
+        },
       ),
     );
   }
+}
+
+Future<List<Map<String, dynamic>>> dbConnector() async {
+  final conn = await MySQLConnection.createConnection(
+    host: 'project-db-campus.smhrd.com',
+    port: 3307,
+    userName: 'smhrd_dbdbDeep',
+    password: 'dbdb1234!',
+    databaseName: 'smhrd_dbdbDeep',
+  );
+
+  await conn.connect();
+
+  var result = await conn.execute("""
+    SELECT 
+        EMOTION_VAL, 
+        count, 
+        percentage, 
+        ranking,
+        CURDATE() AS creation_date
+    FROM (
+        SELECT 
+            EMOTION_VAL,
+            count,
+            percentage,
+            ranking
+        FROM (
+            SELECT 
+                EMOTION_VAL, 
+                COUNT(*) AS count, 
+                ROUND((COUNT(*) / (SELECT COUNT(*) FROM TB_EMOTION WHERE DATE(EMOTION_AT) = CURDATE()) * 100), 1) AS percentage,
+                @rank := @rank + 1 AS ranking
+            FROM TB_EMOTION
+            CROSS JOIN (SELECT @rank := 0) AS vars
+            WHERE DATE(EMOTION_AT) = CURDATE()
+            GROUP BY EMOTION_VAL
+            ORDER BY count DESC
+        ) AS ranked_data
+        WHERE ranking = 1
+    ) AS top_emotion;
+  """);
+
+  List<Map<String, dynamic>> userDataList = [];
+
+  if (result != null && result.isNotEmpty) {
+    for (final row in result.rows) {
+      var userData = row.assoc();
+      userDataList.add(userData);
+    }
+  }
+
+  await conn.close();
+
+  return userDataList;
 }
