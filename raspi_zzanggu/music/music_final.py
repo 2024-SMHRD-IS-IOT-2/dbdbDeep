@@ -12,16 +12,24 @@ from pinecone import Pinecone
 import re
 
 class MusicPlayer:
-    def __init__(self, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_URI):
+    def __init__(self, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_URI,
+                 MYSQL_HOST,MYSQL_PORT,MYSQL_USER,MYSQL_PASSWORD,MYSQL_DATABASE,
+                 PINECONE_API_KEY):
         self.SPOTIFY_CLIENT_ID = SPOTIFY_CLIENT_ID
         self.SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
         self.SPOTIFY_URI = SPOTIFY_URI
-        self.MYSQL
+        self.MYSQL_HOST = MYSQL_HOST
+        self.MYSQL_PORT = MYSQL_PORT
+        self.MYSQL_USER = MYSQL_USER
+        self.MYSQL_PASSWORD = MYSQL_PASSWORD
+        self.MYSQL_DATABASE = MYSQL_DATABASE
+        self.PINECONE_API_KEY =PINECONE_API_KEY
         self.startTime = 0
         self.pauseTime = 0
         self.endTime = 0
         self.sp = self.authenticate_spotify()
-    
+        self.conn = self.authenticate_mysql()
+        self.pc = Pinecone(api_key=PINECONE_API_KEY)
     def authenticate_spotify(self):
         auth_manager = SpotifyOAuth(
             client_id=self.SPOTIFY_CLIENT_ID,
@@ -30,36 +38,32 @@ class MusicPlayer:
             scope="user-modify-playback-state user-read-playback-state"
         )
         return Spotify(auth_manager=auth_manager)
-    
-    def musicVectorCalc(self, emotion,user_id):
-        MYSQL_HOST = os.environ["MYSQL_HOST"]
-        MYSQL_PORT = int(os.environ["MYSQL_PORT"])
-        MYSQL_USER = os.environ["MYSQL_USER"]
-        MYSQL_PASSWORD = os.environ["MYSQL_PASSWORD"]
-        MYSQL_DATABASE = os.environ["MYSQL_DATABASE"]
-
-        conn = pymysql.connect(
-            host=MYSQL_HOST,
-            port=MYSQL_PORT,
-            user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            db=MYSQL_DATABASE,
+    def authenticate_mysql(self):
+        auth_manager = pymysql.connect(
+            host=self.MYSQL_HOST,
+            port=self.MYSQL_PORT,
+            user=self.MYSQL_USER,
+            password=self.MYSQL_PASSWORD,
+            db=self.MYSQL_DATABASE,
             charset="utf8",
         )
-        curs = conn.cursor()
+        return auth_manager
+    
+    # 음악 유사도 pinecone req
+    def musicVectorCalc(self, emotion,user_id):
+        
+        curs = self.conn.cursor()
         sql = f"SELECT * FROM TB_MUSIC_FEATURES WHERE USER_ID = '{user_id}' AND EMOTION_VAL = '{emotion}'"
         curs.execute(sql)
         result = curs.fetchall()
-        conn.commit()
+        self.conn.commit()
         curs.close()
-        conn.close()
+        self.conn.close()
 
         result = list(result)
         query = list(map(float, result[0][2:]))
 
-        PINECONE_API_KEY = os.environ["PINECONE_API_KEY"]
-        pc = Pinecone(api_key=PINECONE_API_KEY)
-        index = pc.Index("test3")
+        index = self.pc.Index("test3")
         results = index.query(vector=query, top_k=10, include_metadata=True, include_values=True)
         
         response = [
@@ -70,6 +74,7 @@ class MusicPlayer:
         important = {'music': response, 'emotion': emotion, 'query': query, 'origin': result}
         return important
     
+    ## 음악 컨트롤러
     def ctrlMusic(self, ctrl):
         if ctrl == '멈춰':
             self.pause()
@@ -98,21 +103,7 @@ class MusicPlayer:
         timer = self.sp.current_user_playing_track()
         update_value = self.decideWeight(important['music'][0]['features'], important['origin'][0][2:], timer['progress_ms'] / 1000)
 
-        MYSQL_HOST = os.environ["MYSQL_HOST"]
-        MYSQL_PORT = int(os.environ["MYSQL_PORT"])
-        MYSQL_USER = os.environ["MYSQL_USER"]
-        MYSQL_PASSWORD = os.environ["MYSQL_PASSWORD"]
-        MYSQL_DATABASE = os.environ["MYSQL_DATABASE"]
-
-        conn = pymysql.connect(
-            host=MYSQL_HOST,
-            port=MYSQL_PORT,
-            user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE
-        )
-
-        curs = conn.cursor()
+        curs = self.conn.cursor()
         table_name = 'TB_MUSIC_FEATURES'
         curs.execute(f"DESCRIBE {table_name}")
         columns = [row[0] for row in curs.fetchall()]
@@ -123,9 +114,9 @@ class MusicPlayer:
         update_query += f" WHERE USER_ID = '{user_id}' AND EMOTION_VAL = '{emotion}'"
 
         curs.execute(update_query)
-        conn.commit()
+        self.conn.commit()
         curs.close()
-        conn.close()
+        self.conn.close()
         
         self.sp.next_track()
         self.play(emotion,user_id)
@@ -153,6 +144,12 @@ if __name__ == "__main__":
     SPOTIFY_CLIENT_ID = os.environ["SPOTIFY_CLIENT_ID"]
     SPOTIFY_CLIENT_SECRET = os.environ["SPOTIFY_CLIENT_SECRET"]
     SPOTIFY_URI = os.environ["SPOTIFY_URI"]
-
-    player = MusicPlayer(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_URI)
+    MYSQL_HOST = os.environ['MYSQL_HOST']
+    MYSQL_PORT =os.environ['MYSQL_PORT']
+    MYSQL_USER = os.environ['MYSQL_USER']
+    MYSQL_PASSWORD = os.environ['MYSQL_PASSWORD']
+    MYSQL_DATABASE = os.environ['MYSQL_DATABASE']
+    PINECONE_API_KEY = os.environ['PINECONE_API_KEY']
+    player = MusicPlayer(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_URI,MYSQL_HOST,MYSQL_PORT,
+                         MYSQL_USER,MYSQL_PASSWORD,MYSQL_DATABASE,PINECONE_API_KEY)
     player.skip('happy', 'test')
