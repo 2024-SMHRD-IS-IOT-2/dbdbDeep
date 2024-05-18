@@ -61,6 +61,7 @@ class Today extends StatelessWidget {
                         break;
                     }
 
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -74,7 +75,10 @@ class Today extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Card(
+
+
+
+                        Card(//카드1
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           clipBehavior: Clip.antiAliasWithSaveLayer,
                           child: Column(
@@ -115,7 +119,10 @@ class Today extends StatelessWidget {
                           ),
                         ),
                         Container(height: 20),
-                        Card(
+
+
+
+                        Card( //카드2
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -136,10 +143,6 @@ class Today extends StatelessWidget {
                                 SizedBox(height: 7),
                                 Container(
                                   height: 190,
-
-
-
-
                                   child: Youtube(youtubeId: getYoutubeId(userData['EMOTION_VAL'])),
                                 ),
                                 SizedBox(height: 15),
@@ -147,6 +150,10 @@ class Today extends StatelessWidget {
                             ),
                           ),
                         ),
+
+
+
+
                         Container(height: 35),
                       ],
                     );
@@ -160,6 +167,9 @@ class Today extends StatelessWidget {
     );
   }
 }
+
+
+
 
 Future<List<Map<String, dynamic>>> dbConnector() async {
   final conn = await MySQLConnection.createConnection(
