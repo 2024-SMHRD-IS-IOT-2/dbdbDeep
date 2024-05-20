@@ -40,19 +40,19 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
         case '슬픔':
           sadVal = double.parse(userData['percentage']);
           break;
-        case '화남':
+        case '분노':
           angryVal = double.parse(userData['percentage']);
           break;
         case '놀람':
           surpriseVal = double.parse(userData['percentage']);
           break;
-        case '공포':
+        case '불안':
           scareVal = double.parse(userData['percentage']);
           break;
         case '혐오':
           hateVal = double.parse(userData['percentage']);
           break;
-        case '평온':
+        case '안정':
           nomalVal = double.parse(userData['percentage']);
           break;
         default:
@@ -106,11 +106,11 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
                           valueStyle: TextStyle(color: Colors.white),
                         ),
                         DChartBarDataCustom(value: sadVal, label: '슬픔', color: Colors.blue, showValue: true, valueStyle: TextStyle(color: Colors.white)),
-                        DChartBarDataCustom(value: angryVal, label: '화남', color: Colors.red, showValue: true, valueStyle: TextStyle(color: Colors.white)),
+                        DChartBarDataCustom(value: angryVal, label: '분노', color: Colors.red, showValue: true, valueStyle: TextStyle(color: Colors.white)),
                         DChartBarDataCustom(value: surpriseVal, label: '놀람', color: Colors.yellow, showValue: true, valueStyle: TextStyle(color: Colors.black54)),
                         DChartBarDataCustom(value: scareVal, label: '불안', color: Colors.deepPurple, showValue: true, valueStyle: TextStyle(color: Colors.white)),
                         DChartBarDataCustom(value: hateVal, label: '혐오', color: Colors.black, showValue: true, valueStyle: TextStyle(color: Colors.white)),
-                        DChartBarDataCustom(value: nomalVal, label: '평온', color: Colors.grey[300], showValue: true, valueStyle: TextStyle(color: Colors.black54)),
+                        DChartBarDataCustom(value: nomalVal, label: '안정', color: Colors.grey[300], showValue: true, valueStyle: TextStyle(color: Colors.black54)),
                       ],
                     ),
                   ),

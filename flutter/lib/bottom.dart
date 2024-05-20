@@ -45,7 +45,7 @@ class _BottomState extends State<Bottom> {
           textAlign: TextAlign.center,
         ),
         centerTitle: true, // title을 가운데 정렬
-        backgroundColor: Colors.blue, //앱바회색
+        backgroundColor: Colors.amber, //앱바회색
         foregroundColor: Colors.black,
         elevation: 0.0,
         bottom: PreferredSize(

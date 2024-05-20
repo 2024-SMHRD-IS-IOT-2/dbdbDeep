@@ -38,23 +38,26 @@ class Today extends StatelessWidget {
                   children: userDataList.map((userData) {
                     String message = '';
                     switch (userData['EMOTION_VAL']) {
-                      case '평온':
-                        message = '평온입니다';
+                      case '안정':
+                        message = '안정입니다';
                         break;
                       case '기쁨':
                         message = '기쁨입니다';
                         break;
-                      case '놀라움':
-                        message = '놀라움입니다';
+                      case '놀람':
+                        message = '놀람입니다';
                         break;
-                      case '공포':
-                        message = '공포입니다';
+                      case '불안':
+                        message = '불안입니다';
                         break;
                       case '슬픔':
                         message = '슬픔입니다';
                         break;
-                      case '화남':
-                        message = '화남입니다';
+                      case '분노':
+                        message = '분노입니다';
+                        break;
+                      case '혐오':
+                        message = '혐오입니다';
                         break;
                       default:
                         message = '알 수 없는 감정입니다';

@@ -1,3 +1,4 @@
+import 'package:final_project/screen/week/linechart_onboarding/onboarding.dart';
 import 'package:final_project/screen/week/week_bar_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:mysql_client/mysql_client.dart';
@@ -39,23 +40,26 @@ class Week extends StatelessWidget {
                   children: userDataList.map((userData) {
                     String message = '';
                     switch (userData['EMOTION_VAL']) {
-                      case '평온':
-                        message = '평온입니다';
+                      case '안정':
+                        message = '안정입니다';
                         break;
                       case '기쁨':
                         message = '기쁨입니다';
                         break;
-                      case '놀라움':
-                        message = '놀라움입니다';
+                      case '놀람':
+                        message = '놀람입니다';
                         break;
-                      case '공포':
-                        message = '공포입니다';
+                      case '불안':
+                        message = '불안입니다';
                         break;
                       case '슬픔':
                         message = '슬픔입니다';
                         break;
-                      case '화남':
-                        message = '화남입니다';
+                      case '분노':
+                        message = '분노입니다';
+                        break;
+                      case '혐오':
+                        message = '혐오입니다';
                         break;
                       default:
                         message = '알 수 없는 감정입니다';
@@ -114,12 +118,35 @@ class Week extends StatelessWidget {
                                   child: Week_bar_chart(), // Week_bar_chart를 불러오는 부분
                                 ),
                                 SizedBox(height: 15),
+
+
+                                GestureDetector( //
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => Onboarding()),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(15),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        const Text('지난 일주일 감정변화 그래프보기 ', style: TextStyle(color: Colors.lightBlue, fontSize:15,)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+
                               ],
                             ),
                           ),
                         ),
 
                         Container(height: 20), // 위아래 컨테이너 간격
+
+
 
                         // 2번째 카드
                         // Horizontal Divider - Default
@@ -148,15 +175,7 @@ class Week extends StatelessWidget {
                                 child: const Divider(height: 5),  // 선 사이 간격
                               ),
 
-                              Container(
-                                padding: const EdgeInsets.all(15),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    const Text('일주일 ·감정별 그래프보기 '),
-                                  ],
-                                ),
-                              ),
+
 
                             ],
                           ),

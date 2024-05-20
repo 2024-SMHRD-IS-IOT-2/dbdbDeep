@@ -227,18 +227,20 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
 
 String getEmotionMessage(String emotion) {
   switch (emotion) {
-    case '평온':
-      return '평온입니다';
+    case '안정':
+      return '안정입니다';
     case '기쁨':
       return '기쁨입니다';
-    case '놀라움':
-      return '놀라움입니다';
-    case '공포':
-      return '공포입니다';
+    case '놀람':
+      return '놀람입니다';
+    case '불안':
+      return '불안입니다';
     case '슬픔':
       return '슬픔입니다';
-    case '화남':
-      return '화남입니다';
+    case '분노':
+      return '분노입니다';
+    case '혐오':
+      return '혐오입니다';
     default:
       return '알 수 없는 감정입니다';
   }
@@ -246,17 +248,19 @@ String getEmotionMessage(String emotion) {
 
 String getYoutubeId(String emotion) {
   switch (emotion) {
-    case '평온':
+    case '안정':
       return '0ZHqB7Fplu0';
     case '기쁨':
       return '8isciJiPPcM';
-    case '놀라움':
+    case '놀람':
       return 'UfXHhFdY_YU';
-    case '공포':
+    case '불안':
       return 'Mphf00NH2Bs';
     case '슬픔':
       return 'm6BHmR4UME0';
-    case '화남':
+    case '분노':
+      return 'QYEB40mIZcY';
+    case '혐오':
       return 'QYEB40mIZcY';
     default:
       return '6VEnTQ2rx_4'; // 기본값
