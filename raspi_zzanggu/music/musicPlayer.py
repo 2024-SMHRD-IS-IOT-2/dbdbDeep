@@ -59,3 +59,5 @@ class MusicPlayer() :
         artist = info['item']['artists'][0]['name']
         title = info['item']['name']
         return artist, title
+    
+    

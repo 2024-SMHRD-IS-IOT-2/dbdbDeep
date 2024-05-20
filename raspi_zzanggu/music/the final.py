@@ -12,7 +12,7 @@ from common.sql import MysqlConn
 from common.thread import Thread, THREAD_STATUS
 from enum import Enum
 import webbrowser
-from common.musicPlayer import MusicPlayer
+from musicPlayer import MusicPlayer
 
 
 class RecMusic(Thread):
