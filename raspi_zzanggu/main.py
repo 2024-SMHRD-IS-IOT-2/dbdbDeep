@@ -146,24 +146,24 @@ def main():
                     playConvAudio.play_all_conv_file()
                     print("main: conv done")
 
-                elif task == TASK.MUSIC_RECOMMEND:
-                    print("task : music recommendation", arg)
-                    # convGen.reset_conversation()
-                    # playConvAudio.clear_input()
-                    recMusic.ctrlMusic(arg['ctrl'])
-
-                    # 노래 추천 금지
-                    if arg["ctrl"] == MUSIC_CTRL.DONT_RECOMMEND :
-                        recMusic.dontRecommend = True
-                        musicEvent.clear()
-                        ## 음악추천 쓰레드 대기모드
-
-                    ## 지금 당장 노래 틀어주기
-                    elif arg["ctrl"] == MUSIC_CTRL.RECOMMEND_NOW :
-                        recMusic.dontRecommend = False
-                        recMusic.ctrlMusic(MUSIC_CTRL.PLAY)
-                        
+                # elif task == TASK.MUSIC_RECOMMEND:
+                #     print("task : music recommendation", arg)
+                #     # convGen.reset_conversation()
+                #     # playConvAudio.clear_input()
                     
+
+                #     # 노래 추천 금지
+                #     if arg["ctrl"] == "dontRecommend" :
+
+                #         recMusic.dontRecommend = True
+
+                #         # musicEvent.clear()
+                #         ## 음악추천 쓰레드 대기모드
+
+                #     ## 지금 당장 노래 틀어주기
+                #     elif arg["ctrl"] == "recommendNow" :
+                #         recMusic.dontRecommend = False
+                #         recMusic.just_music(arg['emotion'])
 
                 ## || 완료 ||
                 ## 기능은 해당 클래스에서
@@ -191,22 +191,21 @@ def main():
                         print("iot조작 실패")
                     # playConvAudio.clear_input()
                     
-                            
-            print("exit conversation cycle")
-            break # TEST. 대화 사이클 while 종료
+            # print("exit conversation cycle")
+            # break # TEST. 대화 사이클 while 종료
     
-
-        print("exit main loop")
-        break  # TEST. 메인 프로그램 loop 종료
+        # print("exit main loop")
+        # break  # TEST. 메인 프로그램 loop 종료
     ## 대기중인 쓰레드 종료
-    [ev.set() for ev in [ttsEvent,convGenEvent,emoEvent,musicEvent]]
 
+    [ev.set() for ev in [ttsEvent,convGenEvent,emoEvent,musicEvent]]
     convGen.push_input(THREAD_STATUS.FINISH, "")
     convGen.finish()
     generateOutputAudio.finish()
     emotionModel.push_input(THREAD_STATUS.FINISH, "", "")
     emotionModel.finish()
     print("thread all clear")
+    sqlconn.connClose()
 
 
 if __name__ == "__main__":

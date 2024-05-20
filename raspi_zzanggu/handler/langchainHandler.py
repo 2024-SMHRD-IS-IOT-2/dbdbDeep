@@ -174,26 +174,28 @@ class TaskClassifier:
 
 ####### langchain tool calling ########
 @tool
-def recommend_music(emotion:str, ctrl:int)->int:
+def recommend_music(emotion:str, ctrl:str)->int:
     """
         check if user ask for the music recommendation, or ask not to recommend.
-        based on the user input, determine user's emotion from [happy, angry, normal, sad]
-        emotion value is normal by default
-        RECOMMEND_NOW = 5
-        DONT_RECOMMEND = 6
+        based on the user input, determine user's emotion from [Happy, Angry, Neutral, Sad]
+        emotion value is Neutral by default
+        RECOMMEND_NOW = "recommendNow"
+        DONT_RECOMMEND = "dontRecommend"
 
     """
     return TASK.MUSIC_RECOMMEND
 
 @tool
-def control_music(ctrl:int)->int:
+def control_music(ctrl:str)->int:
     """
         check what user wants to do with the current music.
-            STOP current music = 0
-            PAUSE current music = 1
-            PLAY or resume current music = 2
-            SKIP current music = 3
-            get current music information = 4
+        also check if user don't want the music recommendation.
+            STOP current music = "stop"
+            PAUSE current music = "pause"
+            PLAY or resume current music = "play"
+            SKIP current music = "skip"
+            get current music information = "info"
+            dont recommend music = "dontRecommend"
     """
     return TASK.MUSIC_CTRL
 
@@ -214,4 +216,4 @@ def control_iot(device:int, power:int, sec:int)-> str:
 
 
 
-llm_ctrl_list = [recommend_music, control_music, control_iot]
+llm_ctrl_list = [control_music, control_iot]
