@@ -12,7 +12,14 @@ class TASK(Enum):
     IOT_CTRL = 2
     MUSIC_RECOMMEND = 3
     MUSIC_CTRL = 3
-    
+
+
+class IOT_CTRL(Enum):
+    FAN = 0
+    LIVINGROOM_LED = 1
+    BEDROOM_LED = 2
+
+
 ## gpt 대답생성 쓰레드
 ## 계속 돌아감.
 ## 인풋 큐 : flag, userSentence
@@ -27,6 +34,7 @@ class ConvGenThread(Thread, BaseCallbackHandler):
                     temperature= temp, 
                     max_tokens = max_tokens,
                     model_name='gpt-4',
+                    # model_name='gpt-3.5-turbo',
                     streaming=True,
                     callbacks=[self]
                 ),
@@ -54,6 +62,8 @@ class ConvGenThread(Thread, BaseCallbackHandler):
                     break
                 elif flag == THREAD_STATUS.DONE :
                     self.push_output(flag, "", "")
+                    print("convGen thread clear")
+                    self.event.clear()
                     
                 elif flag == THREAD_STATUS.RUNNING:
                     self.conversation.predict(input=sentence)
@@ -89,19 +99,17 @@ class ConvGenThread(Thread, BaseCallbackHandler):
             ^^ -> happy
             @@ -> angry
             ** -> sad
-         """}, {"output": "##알았어. 내 이름은 짱구야. 넌 뭐하니"})
+         """}, {"output": "##알았어. 나는 너의 친한 친구 짱구야."})
         
         
-
-
-
+## no thread
 class TaskClassifier:
     def __init__(self, api_key, temp=0.5, max_tokens=300):
         self.classify_llm = ChatOpenAI(
         api_key=api_key,
         temperature=temp, 
         max_tokens = max_tokens,
-        model_name='gpt-4',
+        model_name='gpt-3.5-turbo',
         ).bind_tools(llm_ctrl_list)
         
 
@@ -110,7 +118,7 @@ class TaskClassifier:
         ans = self.classify_llm.invoke(user_input_text).tool_calls
         
         arg = []
-        if len(ans) == 0 :
+        if len(ans)  == 0  :
             task = TASK.CONVERSATION
         else :
             arg = ans[0]['args']
@@ -124,18 +132,68 @@ class TaskClassifier:
         return task, arg
 
 
+
+## thread version
+# class TaskClassifierThread(Thread):
+#     def __init__(self, api_key, event, temp=0.5, max_tokens=300):
+#         super().__init__(target=self.target,event=event)
+        
+#         self.classify_llm = ChatOpenAI(
+#         api_key=api_key,
+#         temperature=temp, 
+#         max_tokens = max_tokens,
+#         model_name='gpt-4',
+#         ).bind_tools(llm_ctrl_list)
+        
+
+#     def target(self):
+
+#         user_input_text = self.input_queue.get()
+
+#         print(user_input_text)
+#         task = TASK.NONE
+#         ans = self.classify_llm.invoke(user_input_text).tool_calls
+        
+#         arg = []
+#         if len(ans)  == 0 :
+#             task = TASK.CONVERSATION
+#         else :
+#             arg = ans[0]['args']
+#             if ans[0]['name'] == 'control_iot' :
+#                 task = TASK.IOT_CTRL
+#             elif ans[0]['name'] == 'control_music' :
+#                 task = TASK.MUSIC_CTRL
+#             elif ans[0]['name'] == 'recommend_music' :
+#                 task = TASK.MUSIC_RECOMMEND
+            
+#         self.output_queue.put((task,arg))
+#         return task, arg
+
+
+
+
 ####### langchain tool calling ########
 @tool
-def recommend_music(play:bool)->int:
+def recommend_music(emotion:str, ctrl:int)->int:
     """
-        check if user ask to play the recommended music
+        check if user ask for the music recommendation, or ask not to recommend.
+        based on the user input, determine user's emotion from [happy, angry, normal, sad]
+        emotion value is normal by default
+        RECOMMEND_NOW = 5
+        DONT_RECOMMEND = 6
+
     """
     return TASK.MUSIC_RECOMMEND
 
 @tool
-def control_music(skip : bool, stop : bool, pause : bool)->int:
+def control_music(ctrl:int)->int:
     """
-        check if user wants to skip, pause, or stop the music.
+        check what user wants to do with the current music.
+            STOP current music = 0
+            PAUSE current music = 1
+            PLAY or resume current music = 2
+            SKIP current music = 3
+            get current music information = 4
     """
     return TASK.MUSIC_CTRL
 
@@ -153,5 +211,7 @@ def control_iot(device:int, power:int, sec:int)-> str:
         bed-room = 2
     """    
     return "controlIOT"
+
+
 
 llm_ctrl_list = [recommend_music, control_music, control_iot]
