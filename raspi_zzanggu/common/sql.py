@@ -16,6 +16,10 @@ class MysqlConn :
                 self.conn.commit()
                 cursor.close()
         finally:
-
-            self.conn.close()
+            print("sql query.")
+            
         return result
+    
+
+    def connClose(self):
+        self.conn.close()

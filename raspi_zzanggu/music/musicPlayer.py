@@ -22,24 +22,27 @@ class MusicPlayer() :
             redirect_uri=SPOTIFY_URI,
             scope="user-modify-playback-state user-read-playback-state"
         ))
+        webbrowser.open_new('https://open.spotify.com/')
         
         
     
             
     def skip(self):
-        self.sp.next_track()
         timer = self.sp.current_user_playing_track()
         time = timer['progress_ms'] / 1000
+        self.sp.next_track()
         return time
     def play(self,title):
-        result = self.sp.search(title,limit=1,type='track')
-        play_track = [result['tracks']['items'][0]['uri']]
-        webbrowser.open_new('https://open.spotify.com/?pwa=1')
+        music_title = [title[0]['music'][i]['title'] for i in range(len(title[0]))]
+        play_track = [self.sp.search(i,limit=1,type='track')['tracks']['items'][0]['uri'] for i in music_title]    
+        recommend_data = self.sp.recommendations(seed_tracks=play_track,limit=10)
+        play_tracks = [recommend_data['tracks'][i]['external_urls']['spotify'] for i in range(len(recommend_data['tracks']))]
+        
         devices = self.sp.devices()
         device_id = None
         if devices['devices']:
             device_id = devices['devices'][0]['id']
-        self.sp.start_playback(device_id=device_id,uris = play_track)
+        self.sp.start_playback(device_id=device_id,uris = play_tracks)
         
     def pause(self):
         self.sp.pause_playback()

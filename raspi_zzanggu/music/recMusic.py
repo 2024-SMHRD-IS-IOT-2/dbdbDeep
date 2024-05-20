@@ -41,20 +41,7 @@ class RecMusic(Thread):
 
                 elif flag == THREAD_STATUS.RUNNING: 
                     
-                    query = f'SELECT * FROM TB_MUSIC_FEATURES WHERE USER_ID = "{self.user_id}" AND EMOTION_VAL = "{emo}"'
-                    result = self.conn(query, self.user_id, emo)
-                    
-                    result = list(result)
-                    input_vectorDB = list(map(float, result[0][2:]))
-                    
-                    index = self.pc.Index('test')
-                    results = index.query(vector=input_vectorDB, top_k =5, include_metadata=True,include_values=True)
-                    # 감정에 따른 노래 추천(제목, 특성) == response
-                    res = [
-                        {"title": res['metadata']['text'], "features": res['values']} for res in results['matches']
-                    ]
-                    response = {'music': res, 'origin' : result, 'emotion': emo}
-                    self.response_list.append(response)
+                    self.just_music(emo)
     def just_music(self,emo):
         query = "SELECT * FROM TB_MUSIC_FEATURES WHERE USER_ID = %s AND EMOTION_VAL = %s"
         result = self.conn.sqlquery(query,self.user_id,emo)
@@ -63,7 +50,7 @@ class RecMusic(Thread):
         input_vectorDB = list(map(float, result[0][2:]))
                     
         index = self.pc.Index('test')
-        results = index.query(vector=input_vectorDB, top_k =5, include_metadata=True,include_values=True)
+        results = index.query(vector=input_vectorDB, top_k =10, include_metadata=True,include_values=True)
                     # 감정에 따른 노래 추천(제목, 특성) == response
         res = [
                         {"title": res['metadata']['text'], "features": res['values']} for res in results['matches']
@@ -83,37 +70,43 @@ class RecMusic(Thread):
     def ctrlMusic(self, ctrl):
         print("ctrlMusic : In",ctrl)
 
-        if ctrl == MUSIC_CTRL.PAUSE :
+        if ctrl == "pause" :
             print("ctrlMusic:Pause", ctrl)
             self.music_player.pause()
             print("ctrlMusic:Pause", ctrl)
-        elif ctrl == 2 :
+        elif ctrl == "play" :
+            self.dontRecommend = True
             print("ctrlMusic:Play", ctrl)
-            self.just_music('Neutral')
-            self.music_player.play(self.response_list[0]['music'][0]['title'])
-        elif ctrl == MUSIC_CTRL.STOP :
+            emo = "Neutral" if len(self.response_list) == 0 else self.response_list[0]['emotion']
+            self.just_music(emo)
+            self.music_player.play(self.response_list)
+        elif ctrl == "stop" :
             print("ctrlMusic:Stop", ctrl)
             self.music_player.stop()
-        elif ctrl == MUSIC_CTRL.SKIP :
+        elif ctrl == "skip" :
             print("ctrlMusic:Skip", ctrl)
             self.music_player.skip()
-            self.updateWeight()
-        elif ctrl == MUSIC_CTRL.CUR_MUSIC_INFO :
+            self.updateWeight(self.response_list)
+        elif ctrl == "info":
             self.music_player.get_info()    
+        elif ctrl =="dontRecommend":
+            self.dontRecommend = True
+            self.music_player.stop()
             
-    def updateWeight(self,emo):
+    def updateWeight(self,response_list):
         if self.music_player != None:
             if type(self.music_player) == float:
-                standard_vector = normalize(pd.DataFrame([self.response_list['music'][0]['features']]))
-                recommend_vector = normalize(pd.DataFrame([self.response_list['origin'][0][2:]]))
+                standard_vector = normalize(pd.DataFrame([response_list[0]['music'][0]['features']]).T)
+                recommend_vector = normalize(pd.DataFrame([response_list[0]['origin'][0][2:]]).T)
                 if self.music_player < 60:
                     result = standard_vector + (recommend_vector * -10)
+                    print(result)
                 else:
                     pass
             update_value = result[0]
             up_columns = self.conn(f'DESCRIBE TB_MUSIC_FEATURES')
             update_query = f"UPDATE TB_MUSIC_FEATURES SET "
             update_query += ", ".join([f"{up_columns[i]} = {update_value[i]}" for i in range(len(up_columns))])
-            update_query += f" WHERE USER_ID = '{self.user_id}' AND EMOTION_VAL = '{emo}'"
+            update_query += f" WHERE USER_ID = '{self.user_id}' AND EMOTION_VAL = '{response_list['emotion']}'"
 
             self.conn(update_query)
