@@ -14,5 +14,7 @@ pandas == 2.1.4
 pinecone == 4.0.0
 spotipy
 selenium == 4.20.0
-
+tensorflow
+keras
+scikit-learn
 
