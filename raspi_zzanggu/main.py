@@ -1,10 +1,10 @@
 import subprocess, sys
 ## pip install
-#subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", 'requirements.txt'])
+# subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", 'requirements.txt'])
 
 def main():
 
-    from handler.langchainHandler import TaskClassifier, ConvGenThread, TASK, TaskClassifierThread
+    from handler.langchainHandler import TaskClassifier, ConvGenThread, TASK
     from handler.outputHandler import GenerateOutputAudioThread, PlayAudio, HomeCtrl
     from handler.inputHandler import InputHandler
     from model.emotionModel import EmotionModelThread
@@ -42,7 +42,7 @@ def main():
     generateOutputAudio = GenerateOutputAudioThread(event=ttsEvent,
                                                     actor_id=os.environ['TYPECAST_ACTOR_ID'], 
                                                     api_key=os.environ['TYPECAST_API_KEY']) ## 출력오디오 생성 객체
-    emotionModel = EmotionModelThread(event=emoEvent, user_id=user_id, emo_text_model=None, emo_wav_model=None, conn=sqlconn)
+    emotionModel = EmotionModelThread(event=emoEvent, user_id=user_id, conn=sqlconn)
     musicPlayer = MusicPlayer(SPOTIFY_CLIENT_ID=os.environ['SPOTIFY_CLIENT_ID'],
                               SPOTIFY_CLIENT_SECRET=os.environ['SPOTIFY_CLIENT_SECRET'],
                               SPOTIFY_URI=os.environ['SPOTIFY_URI'])
@@ -95,13 +95,13 @@ def main():
             
 
             ## 유저 음성 받기 !! 완료 !!
-            # userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(filename='./wav/userSentence.wav',
-            #                                                                               inputWaitTIme=10, 
-            #                                                                               silence_duration=2, 
-            #                                                                               silence_threshold=40)
+            userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(filename='./wav/userSentence.wav',
+                                                                                          inputWaitTIme=10, 
+                                                                                          silence_duration=2, 
+                                                                                          silence_threshold=40)
             
             ## TEST 유저음성
-            userInputIn, user_input_text, user_input_audio = True, "음악좀 틀어줘" , "./wav/userSentence.wav"
+            # userInputIn, user_input_text, user_input_audio = True, "난 그럭저럭 지내. 넌 뭐하니" , "./wav/userSentence.wav"
             print("userInput in")            
             ## 일정 시간동안 말 안했을떄. 아웃.
             if not userInputIn :
@@ -200,6 +200,7 @@ def main():
         break  # TEST. 메인 프로그램 loop 종료
     ## 대기중인 쓰레드 종료
     [ev.set() for ev in [ttsEvent,convGenEvent,emoEvent,musicEvent]]
+
     convGen.push_input(THREAD_STATUS.FINISH, "")
     convGen.finish()
     generateOutputAudio.finish()

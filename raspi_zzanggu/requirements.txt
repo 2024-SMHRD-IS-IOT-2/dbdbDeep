@@ -17,4 +17,6 @@ selenium == 4.20.0
 tensorflow
 keras
 scikit-learn
-
+nlpaug
+torch
+transformers

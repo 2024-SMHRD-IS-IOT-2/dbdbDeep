@@ -38,8 +38,8 @@ class GenerateOutputAudioThread(Thread):
                 elif flag == THREAD_STATUS.RUNNING :
                     filename = f"./wav/ttsOut{self.cnt}.wav"
                     ## TEST : 미리 생성돼있는 넘들로 대신 출력
-                    # self.do_tts(text,filename,emo)
-                    time.sleep(1) ## TEST tts 생성 딜레이 
+                    self.do_tts(text,filename,emo)
+                    # time.sleep(1) ## TEST tts 생성 딜레이 
                     self.push_output(flag, emo, filename)
                     print("tts file created : ", filename)
                     self.cnt+=1
