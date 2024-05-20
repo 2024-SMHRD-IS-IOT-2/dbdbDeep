@@ -29,16 +29,17 @@ class GenerateOutputAudioThread(Thread):
                 # 대화 종료시 파일카운터 초기화
                 elif flag == THREAD_STATUS.DONE :
                     self.cnt = 0
-                    print("audio creation Done. 쓰레드 대기모드로")
                     self.push_output(flag, "", "")
 
-                    self.event.clear() #대화생성쓰레드, tts쓰레드 대기모드로
+                    print("audio creation thread clear")
+                    self.event.clear() #tts쓰레드 대기모드로
                 
                 ## TTS 작업
                 elif flag == THREAD_STATUS.RUNNING :
                     filename = f"./wav/ttsOut{self.cnt}.wav"
                     ## TEST : 미리 생성돼있는 넘들로 대신 출력
-                    self.do_tts(text,filename,emo)
+                    # self.do_tts(text,filename,emo)
+                    time.sleep(1) ## TEST tts 생성 딜레이 
                     self.push_output(flag, emo, filename)
                     print("tts file created : ", filename)
                     self.cnt+=1
@@ -80,16 +81,18 @@ class PlayAudio:
     # 인풋 큐 클리어 함수 (대화가 아닐 시)
     def clear_input(self):
         while not self.input_queue.empty():
-            flag, emo, filename = self.input_queue.get_nowait()
-            if flag == THREAD_STATUS.DONE :
+            flag, _, filename = self.input_queue.get_nowait()
+            if flag == THREAD_STATUS.FINISH or flag == THREAD_STATUS.DONE :
                 break
 
             try :
-                os.remove(filename)
+                print("remove files")
+                # os.remove(filename)
             except FileNotFoundError:
                 print("해당 파일을 찾을 수 없음.", filename)
+                break
 
-    def play_all_file(self):
+    def play_all_conv_file(self):
         while True:
             if not self.input_queue.empty():
                 flag, emo, filename = self.input_queue.get_nowait()
@@ -101,14 +104,14 @@ class PlayAudio:
                 
                 elif flag == THREAD_STATUS.RUNNING :
                     data, fs = sf.read(filename, dtype='float32')  
-                    time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
+                    time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
                     # TODO : 아두이노 시리얼로 감정 보내기
 
                     print("play conv audio ", filename)
                     sd.play(data, fs)
                     status = sd.wait()  # Wait until file is done playing
-                    os.remove(filename) # remove file after playing
-                    time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
+                    # os.remove(filename) # remove file after playing
+                    time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
 
     def play_file(self, filename):
         data, fs = sf.read(filename, dtype='float32')  
@@ -117,7 +120,7 @@ class PlayAudio:
         print("play sound ", filename)
         sd.play(data, fs)
         status = sd.wait()  # Wait until file is done playing
-        os.remove(filename) # remove file after playing
+        # os.remove(filename) # remove file after playing
         time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
                     
 

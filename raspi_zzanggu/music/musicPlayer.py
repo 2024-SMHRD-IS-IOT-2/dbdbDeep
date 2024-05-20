@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 import os
 import time
 import pandas as pd
@@ -5,6 +7,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 import pymysql
 from sklearn.preprocessing import normalize
+>>>>>>> 279ba60d3fc9c007c2114769de8fadd22007d2aa
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 from pinecone import Pinecone
@@ -24,8 +27,12 @@ class MUSIC_CTRL(Enum):
     DONT_RECOMMEND = 6
     
 class MusicPlayer() :
+<<<<<<< HEAD
+    def __init__(self,SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_URI):
+=======
     def __init__(self,event,SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_URI):
         super().__init__(target=self.traget, event = event)
+>>>>>>> 279ba60d3fc9c007c2114769de8fadd22007d2aa
         self.sp = Spotify(SpotifyOAuth(
             client_id=SPOTIFY_CLIENT_ID,
             client_secret=SPOTIFY_CLIENT_SECRET,
