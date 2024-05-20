@@ -10,14 +10,14 @@ class SalesData {
 }
 
 // LineChart 위젯 정의
-class Happy_linechart extends StatefulWidget {
-  const Happy_linechart({Key? key}) : super(key: key);
+class Sadness_linechart extends StatefulWidget {
+  const Sadness_linechart({Key? key}) : super(key: key);
 
   @override
-  State<Happy_linechart> createState() => _Happy_linechartState();
+  State<Sadness_linechart> createState() => _Sadness_linechartState();
 }
 
-class _Happy_linechartState extends State<Happy_linechart> {
+class _Sadness_linechartState extends State<Sadness_linechart> {
   List<SalesData> chartData = [];
   String startDate = '';
   String endDate = '';
@@ -37,7 +37,7 @@ class _Happy_linechartState extends State<Happy_linechart> {
       setState(() {
         startDate = userDataList.first['start_date'];
         endDate = userDataList.first['end_date'];
-        emotion = userDataList.first['emotion'];
+        emotion = '슬픔';
         chartData = userDataList.map((data) {
           return SalesData(data['date'], double.parse(data['percentage']));
         }).toList();
@@ -89,16 +89,15 @@ class _Happy_linechartState extends State<Happy_linechart> {
                       yValueMapper: (SalesData sales, _) => sales.percentage,
                         dataLabelSettings: DataLabelSettings(
                           isVisible: true,
-                          textStyle: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black45,
+                          textStyle: TextStyle( // 텍스트 스타일 지정
+                            fontSize: 15, // 글꼴 크기 조정
+                            fontWeight: FontWeight.bold, // 글꼴 두께 설정
+                            color: Colors.black45, // 글꼴 색상 설정
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                      color: Colors.pinkAccent, //라인의 색상을 지정
-                      width: 4 //라인의 두께를 기본2
-
+                        color: Colors.blue,
+                        width: 4
                     )
                   ],
                 )
@@ -138,8 +137,8 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
      FROM TB_EMOTION 
      WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
        AND EMOTION_AT < CURDATE()) AS end_date,  -- 종료 날짜를 그대로 출력
-    '기쁨' AS emotion,
-    ROUND((SUM(CASE WHEN EMOTION_VAL = '기쁨' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
+    'Sadness' AS emotion,
+    ROUND((SUM(CASE WHEN EMOTION_VAL = 'Sadness' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
 FROM TB_EMOTION
 WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
   AND EMOTION_AT < CURDATE()

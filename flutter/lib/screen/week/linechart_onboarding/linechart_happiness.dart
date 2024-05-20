@@ -10,14 +10,14 @@ class SalesData {
 }
 
 // LineChart 위젯 정의
-class Easy_linechart extends StatefulWidget {
-  const Easy_linechart({Key? key}) : super(key: key);
+class Happiness_linechart extends StatefulWidget {
+  const Happiness_linechart({Key? key}) : super(key: key);
 
   @override
-  State<Easy_linechart> createState() => _Happy_linechartState();
+  State<Happiness_linechart> createState() => _Happiness_linechartState();
 }
 
-class _Happy_linechartState extends State<Easy_linechart> {
+class _Happiness_linechartState extends State<Happiness_linechart> {
   List<SalesData> chartData = [];
   String startDate = '';
   String endDate = '';
@@ -37,7 +37,7 @@ class _Happy_linechartState extends State<Easy_linechart> {
       setState(() {
         startDate = userDataList.first['start_date'];
         endDate = userDataList.first['end_date'];
-        emotion = userDataList.first['emotion'];
+        emotion = '행복';
         chartData = userDataList.map((data) {
           return SalesData(data['date'], double.parse(data['percentage']));
         }).toList();
@@ -96,8 +96,9 @@ class _Happy_linechartState extends State<Easy_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                        color: Colors.grey,
-                        width: 4
+                      color: Colors.pinkAccent, //라인의 색상을 지정
+                      width: 4 //라인의 두께를 기본2
+
                     )
                   ],
                 )
@@ -137,8 +138,8 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
      FROM TB_EMOTION 
      WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
        AND EMOTION_AT < CURDATE()) AS end_date,  -- 종료 날짜를 그대로 출력
-    '안정' AS emotion,
-    ROUND((SUM(CASE WHEN EMOTION_VAL = '안정' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
+    'Happiness' AS emotion,
+    ROUND((SUM(CASE WHEN EMOTION_VAL = 'Happiness' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
 FROM TB_EMOTION
 WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
   AND EMOTION_AT < CURDATE()

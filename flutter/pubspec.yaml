@@ -42,6 +42,7 @@ dependencies:
 
   d_chart: ^2.6.9  #차트연결
   d_method: ^0.2.6
+  pie_chart: ^5.4.0 #파이차트
 
   mysql1: ^0.20.0
   mysql_client: ^0.0.27

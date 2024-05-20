@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('로그인 페이지'),
+        title: Text(' '),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -34,64 +34,61 @@ class _LoginPageState extends State<LoginPage> {
             padding: EdgeInsets.all(12),
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: idCon,
-                    decoration: InputDecoration(
-                      label: Row(
-                        children: [
-                          Icon(Icons.account_circle),
-                          Text(" 아이디 입력"),
-                        ],
-                      ),
-                      hintText: "example@example.com",
-                      hintStyle: TextStyle(color: Colors.grey[300]),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
+                SizedBox(height: 40),
+                Text(
+                  'dbdbDeep',
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.grey),
+                ),
+                SizedBox(height: 20),
+                TextField(
+                  controller: idCon,
+                  decoration: InputDecoration(
+                    labelText: '아이디를 입력해 주세요',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                SizedBox(height: 10), // 수정: 간격 축소
+                TextField(
+                  controller: pwCon,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: '비밀번호를 입력해 주세요',
+                    border: OutlineInputBorder(),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: pwCon,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      label: Row(
-                        children: [
-                          Icon(Icons.key),
-                          Text(" 비밀번호 입력"),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                SizedBox(height: 20), // 수정: 간격 축소
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
                       onPressed: () {
-                        login(idCon.text, pwCon.text, context); // 로그인 버튼 클릭 시 값 보냄
+                        login(idCon.text, pwCon.text, context);
                       },
-                      child: Text('로그인하기'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        padding: EdgeInsets.symmetric(horizontal: 55, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      child: Text('로그인', style: TextStyle(fontSize: 15, color: Colors.white)),
                     ),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
                       onPressed: () {
                         Navigator.push(context, MaterialPageRoute(builder: (_) => JoinPage()));
                       },
-                      child: Text('회원가입하기'),
-                    )
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        padding: EdgeInsets.symmetric(horizontal: 55, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      child: Text('회원가입', style: TextStyle(fontSize: 15, color: Colors.white)),
+                    ),
                   ],
                 ),
-                SizedBox(height: 40),
-                Container(
-                  color: Colors.grey[200],
-                  width: double.infinity,
-                  height: 2,
-                ),
-                SizedBox(height: 40),
               ],
             ),
           ),

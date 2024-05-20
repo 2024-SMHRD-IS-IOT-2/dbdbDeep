@@ -37,7 +37,7 @@ class _Angry_linechartState extends State<Angry_linechart> {
       setState(() {
         startDate = userDataList.first['start_date'];
         endDate = userDataList.first['end_date'];
-        emotion = userDataList.first['emotion'];
+        emotion = '화남'; // 'Angry' 대신 '화남'으로 변경
         chartData = userDataList.map((data) {
           return SalesData(data['date'], double.parse(data['percentage']));
         }).toList();
@@ -133,8 +133,8 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
      FROM TB_EMOTION 
      WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
        AND EMOTION_AT < CURDATE()) AS end_date,  -- 종료 날짜를 그대로 출력
-    '분노' AS emotion,
-    ROUND((SUM(CASE WHEN EMOTION_VAL = '분노' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
+    'Angry' AS emotion,
+    ROUND((SUM(CASE WHEN EMOTION_VAL = 'Angry' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
 FROM TB_EMOTION
 WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
   AND EMOTION_AT < CURDATE()

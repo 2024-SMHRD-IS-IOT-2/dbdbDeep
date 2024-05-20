@@ -37,7 +37,7 @@ class _Surprise_linechartState extends State<Surprise_linechart> {
       setState(() {
         startDate = userDataList.first['start_date'];
         endDate = userDataList.first['end_date'];
-        emotion = userDataList.first['emotion'];
+        emotion = '슬픔';
         chartData = userDataList.map((data) {
           return SalesData(data['date'], double.parse(data['percentage']));
         }).toList();
@@ -139,8 +139,8 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
      FROM TB_EMOTION 
      WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
        AND EMOTION_AT < CURDATE()) AS end_date,  -- 종료 날짜를 그대로 출력
-    '놀람' AS emotion,
-    ROUND((SUM(CASE WHEN EMOTION_VAL = '놀람' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
+    'Surprise' AS emotion,
+    ROUND((SUM(CASE WHEN EMOTION_VAL = 'Surprise' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
 FROM TB_EMOTION
 WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
   AND EMOTION_AT < CURDATE()

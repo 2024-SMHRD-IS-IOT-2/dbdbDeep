@@ -16,6 +16,7 @@ class Smart_home extends StatefulWidget {
 class _Smart_homeState extends State<Smart_home> {
   bool living_room = false; // 거실 스위치 초기값
   bool room1 = false;       // 방1 스위치 초기값
+  bool fan = false;         // 선풍기 스위치 초기값
 
   // ***LED를 제어하는 함수
   void _ledControl(int loc, int power, int sec) async {
@@ -75,6 +76,27 @@ class _Smart_homeState extends State<Smart_home> {
               },
               contentPadding: EdgeInsets.symmetric(horizontal: 150.0, vertical: 0.0), // 내용의 패딩을 설정
             ),
+
+
+            // 선풍기
+            SwitchListTile(
+              title: Text('선풍기'),
+              value: fan, // 현재 스위치 상태
+              onChanged: (newValue) {
+                setState(() {
+                  fan = newValue!; // 스위치 상태를 변경
+                  _ledControl(0, fan ? 100 : 1, 0); // LED 제어 함수를 호출하여 선풍기 LED를 제어함. 선풍기0번, sec 매개변수를 0으로 설정하여 계속 켜진 상태를 유지
+                });
+              },
+              contentPadding: EdgeInsets.symmetric(horizontal: 150.0, vertical: 0.0), // 내용의 패딩을 설정
+            ),
+
+
+
+
+
+
+
             ElevatedButton(
               onPressed: _ledStatus, // LED 상태 확인 함수를 호출함
               child: Text('LED 상태 확인'), // 버튼 텍스트

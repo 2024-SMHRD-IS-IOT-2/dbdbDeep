@@ -20,11 +20,6 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
   double nomalVal = 0;
   double maxValue = 0;
 
-  // @override
-  //  void initState() {
-  //    super.initState();
-  //    loadEmotionData();
-  //  }
 
   Future<num> loadEmotionData() async {
     var userDataList = await dbConnector();
@@ -34,25 +29,25 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
     print(userDataList);
     for (var userData in userDataList) {
       switch (userData['EMOTION_VAL']) {
-        case '기쁨':
+        case ' Happiness':
           happyVal = double.parse(userData['percentage']);
           break;
-        case '슬픔':
+        case 'Sadness':
           sadVal = double.parse(userData['percentage']);
           break;
-        case '분노':
+        case 'Angry':
           angryVal = double.parse(userData['percentage']);
           break;
-        case '놀람':
+        case 'Surprise':
           surpriseVal = double.parse(userData['percentage']);
           break;
-        case '불안':
+        case 'Fear':
           scareVal = double.parse(userData['percentage']);
           break;
-        case '혐오':
+        case 'Disgust':
           hateVal = double.parse(userData['percentage']);
           break;
-        case '안정':
+        case 'Neutral':
           nomalVal = double.parse(userData['percentage']);
           break;
         default:
@@ -95,8 +90,9 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
                         topRight: Radius.circular(8),
                       ),
                       max: maxValue, //최대값
+                      valueAlign: Alignment.topCenter, // 글씨 가운데 정렬
 
-                      valueAlign: Alignment.topRight,
+
                       listData: [
                         DChartBarDataCustom(
                           value: 13,
@@ -105,12 +101,12 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
                           showValue: true,
                           valueStyle: TextStyle(color: Colors.white),
                         ),
-                        DChartBarDataCustom(value: sadVal, label: '슬픔', color: Colors.blue, showValue: true, valueStyle: TextStyle(color: Colors.white)),
-                        DChartBarDataCustom(value: angryVal, label: '분노', color: Colors.red, showValue: true, valueStyle: TextStyle(color: Colors.white)),
-                        DChartBarDataCustom(value: surpriseVal, label: '놀람', color: Colors.yellow, showValue: true, valueStyle: TextStyle(color: Colors.black54)),
-                        DChartBarDataCustom(value: scareVal, label: '불안', color: Colors.deepPurple, showValue: true, valueStyle: TextStyle(color: Colors.white)),
-                        DChartBarDataCustom(value: hateVal, label: '혐오', color: Colors.black, showValue: true, valueStyle: TextStyle(color: Colors.white)),
-                        DChartBarDataCustom(value: nomalVal, label: '안정', color: Colors.grey[300], showValue: true, valueStyle: TextStyle(color: Colors.black54)),
+                        DChartBarDataCustom(value: sadVal, label: '슬픔', color: Colors.blue, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 13)),
+                        DChartBarDataCustom(value: angryVal, label: '분노', color: Colors.red, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 13)),
+                        DChartBarDataCustom(value: surpriseVal, label: '놀람', color: Colors.yellow, showValue: true, valueStyle: TextStyle(color: Colors.black54, fontSize: 13)),
+                        DChartBarDataCustom(value: scareVal, label: '불안', color: Colors.deepPurple, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 13)),
+                        DChartBarDataCustom(value: hateVal, label: '혐오', color: Colors.black, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 13)),
+                        DChartBarDataCustom(value: nomalVal, label: '안정', color: Colors.grey[300], showValue: true, valueStyle: TextStyle(color: Colors.black54, fontSize: 13)),
                       ],
                     ),
                   ),

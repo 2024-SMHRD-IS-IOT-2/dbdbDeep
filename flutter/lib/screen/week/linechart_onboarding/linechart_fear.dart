@@ -10,14 +10,14 @@ class SalesData {
 }
 
 // LineChart 위젯 정의
-class Nervous_linechart extends StatefulWidget {
-  const Nervous_linechart({Key? key}) : super(key: key);
+class Fear_linechart extends StatefulWidget {
+  const Fear_linechart({Key? key}) : super(key: key);
 
   @override
-  State<Nervous_linechart> createState() => _Nervous_linechartState();
+  State<Fear_linechart> createState() => _Fear_linechartState();
 }
 
-class _Nervous_linechartState extends State<Nervous_linechart> {
+class _Fear_linechartState extends State<Fear_linechart> {
   List<SalesData> chartData = [];
   String startDate = '';
   String endDate = '';
@@ -37,7 +37,7 @@ class _Nervous_linechartState extends State<Nervous_linechart> {
       setState(() {
         startDate = userDataList.first['start_date'];
         endDate = userDataList.first['end_date'];
-        emotion = userDataList.first['emotion'];
+        emotion = '불안';
         chartData = userDataList.map((data) {
           return SalesData(data['date'], double.parse(data['percentage']));
         }).toList();
@@ -137,8 +137,8 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
      FROM TB_EMOTION 
      WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
        AND EMOTION_AT < CURDATE()) AS end_date,  -- 종료 날짜를 그대로 출력
-    '불안' AS emotion,
-    ROUND((SUM(CASE WHEN EMOTION_VAL = '불안' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
+    'Fear' AS emotion,
+    ROUND((SUM(CASE WHEN EMOTION_VAL = 'Fear' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
 FROM TB_EMOTION
 WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
   AND EMOTION_AT < CURDATE()

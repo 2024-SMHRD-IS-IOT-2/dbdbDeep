@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mysql_client/mysql_client.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
+// Youtube 위젯을 정의. 특정 유튜브 영상을 재생하기 위해 사용됨.
 class Youtube extends StatefulWidget {
   final String youtubeId;
 
@@ -14,6 +15,7 @@ class Youtube extends StatefulWidget {
 class _YoutubeState extends State<Youtube> {
   late YoutubePlayerController _controller;
 
+  // initState 메서드는 YoutubePlayerController를 초기화
   @override
   void initState() {
     super.initState();
@@ -23,6 +25,7 @@ class _YoutubeState extends State<Youtube> {
     );
   }
 
+  // YoutubePlayer를 사용하여 유튜브 영상을 재생하는 화면을 구성
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,133 +47,7 @@ class _YoutubeState extends State<Youtube> {
   }
 }
 
-class Today extends StatelessWidget {
-  const Today({Key? key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: dbConnector(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            List<Map<String, dynamic>> userDataList = snapshot.data ?? [];
-            if (userDataList.isEmpty) {
-              userDataList = [
-                {
-                  'EMOTION_VAL': '평온',
-                  'count': 0,
-                  'percentage': 0,
-                  'ranking': 0,
-                  'creation_date': '기본값2',
-                },
-              ];
-            }
-
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: userDataList.map((userData) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text(
-                            userData['creation_date'],
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.all(15),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text('오늘의 감정', style: TextStyle(fontSize: 10)),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      '${userData['EMOTION_VAL']} ${userData['percentage']}%',
-                                      style: TextStyle(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 0),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 10),
-                                child: const Divider(height: 1),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(15),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(getEmotionMessage(userData['EMOTION_VAL'])),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(height: 20),
-                        Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 4),
-                                Text(
-                                  '추천 동영상',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                SizedBox(height: 7),
-                                Container(
-                                  height: 190,
-                                  child: Youtube(youtubeId: getYoutubeId(userData['EMOTION_VAL'])),
-                                ),
-                                SizedBox(height: 15),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Container(height: 35),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
-            );
-          }
-        },
-      ),
-    );
-  }
-}
-
+// MySQL 데이터베이스에 연결하여 감정 데이터를 가져오는 함수
 Future<List<Map<String, dynamic>>> dbConnector() async {
   final conn = await MySQLConnection.createConnection(
     host: 'project-db-campus.smhrd.com',
@@ -182,6 +59,7 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
 
   await conn.connect();
 
+  // SQL 쿼리: 오늘 날짜의 감정 데이터 중 가장 빈도가 높은 감정을 가져옴
   var result = await conn.execute("""
     SELECT 
         EMOTION_VAL, 
@@ -213,6 +91,7 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
 
   List<Map<String, dynamic>> userDataList = [];
 
+  // 쿼리 결과를 리스트로 변환
   if (result != null && result.isNotEmpty) {
     for (final row in result.rows) {
       var userData = row.assoc();
@@ -225,50 +104,25 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
   return userDataList;
 }
 
-String getEmotionMessage(String emotion) {
-  switch (emotion) {
-    case '안정':
-      return '안정입니다';
-    case '기쁨':
-      return '기쁨입니다';
-    case '놀람':
-      return '놀람입니다';
-    case '불안':
-      return '불안입니다';
-    case '슬픔':
-      return '슬픔입니다';
-    case '분노':
-      return '분노입니다';
-    case '혐오':
-      return '혐오입니다';
-    default:
-      return '알 수 없는 감정입니다';
-  }
-}
-
+// 감정 값에 따라 해당 감정에 맞는 유튜브 영상 ID를 반환하는 함수
 String getYoutubeId(String emotion) {
   switch (emotion) {
-    case '안정':
-      return '0ZHqB7Fplu0';
-    case '기쁨':
-      return '8isciJiPPcM';
-    case '놀람':
-      return 'UfXHhFdY_YU';
-    case '불안':
-      return 'Mphf00NH2Bs';
-    case '슬픔':
-      return 'm6BHmR4UME0';
-    case '분노':
-      return 'QYEB40mIZcY';
-    case '혐오':
-      return 'QYEB40mIZcY';
+    case 'Neutral':
+      return 'AOPue13SZe8'; // 안정
+    case 'Happiness':
+      return '4drvuDQpLUk'; // 기쁨
+    case 'Surprise':
+      return 'VjFV2eoBtxo'; // 놀람
+    case 'Fear':
+      return 'tZ5xgpDb-w0'; // 불안
+    case 'Sadness':
+      return 'PzweJS3SOng'; // 슬픔
+    case 'Angry':
+      return 'PMJ4d7LY8Ao'; // 분노
+    case 'Disgust':
+      return 'Cf2axcUf0lY'; // 혐오
     default:
-      return '6VEnTQ2rx_4'; // 기본값
+      return 'Fs0qitF-qWM'; // 기본값
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: Today(),
-  ));
-}

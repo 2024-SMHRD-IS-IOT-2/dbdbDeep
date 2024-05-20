@@ -10,14 +10,14 @@ class SalesData {
 }
 
 // LineChart 위젯 정의
-class Hate_linechart extends StatefulWidget {
-  const Hate_linechart({Key? key}) : super(key: key);
+class Neutral_linechart extends StatefulWidget {
+  const Neutral_linechart({Key? key}) : super(key: key);
 
   @override
-  State<Hate_linechart> createState() => _Hate_linechartState();
+  State<Neutral_linechart> createState() => _Neutral_linechartState();
 }
 
-class _Hate_linechartState extends State<Hate_linechart> {
+class _Neutral_linechartState extends State<Neutral_linechart> {
   List<SalesData> chartData = [];
   String startDate = '';
   String endDate = '';
@@ -37,7 +37,7 @@ class _Hate_linechartState extends State<Hate_linechart> {
       setState(() {
         startDate = userDataList.first['start_date'];
         endDate = userDataList.first['end_date'];
-        emotion = userDataList.first['emotion'];
+        emotion = '안정';
         chartData = userDataList.map((data) {
           return SalesData(data['date'], double.parse(data['percentage']));
         }).toList();
@@ -96,7 +96,7 @@ class _Hate_linechartState extends State<Hate_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                        color: Colors.black,
+                        color: Colors.grey,
                         width: 4
                     )
                   ],
@@ -137,8 +137,8 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
      FROM TB_EMOTION 
      WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
        AND EMOTION_AT < CURDATE()) AS end_date,  -- 종료 날짜를 그대로 출력
-    '혐오' AS emotion,
-    ROUND((SUM(CASE WHEN EMOTION_VAL = '혐오' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
+    'Neutral' AS emotion,
+    ROUND((SUM(CASE WHEN EMOTION_VAL = 'Neutral' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) AS percentage
 FROM TB_EMOTION
 WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
   AND EMOTION_AT < CURDATE()
