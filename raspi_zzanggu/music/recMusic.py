@@ -5,7 +5,8 @@ from common.sql import MysqlConn
 from common.thread import Thread, THREAD_STATUS
 from enum import Enum
 from music.musicPlayer import MusicPlayer
-
+import os
+from dotenv import load_dotenv
 class MUSIC_CTRL(Enum):
     STOP = 0
     PAUSE = 1
@@ -24,7 +25,7 @@ class RecMusic(Thread):
         self.music_player = music_player
         self.user_id = user_id
         self.dontRecommend = False
-        
+        self.idx = 0
     def musicVectorCals(self):
         while True:
             self.event.wait()
@@ -46,7 +47,7 @@ class RecMusic(Thread):
         query = "SELECT * FROM TB_MUSIC_FEATURES WHERE USER_ID = %s AND EMOTION_VAL = %s"
         result = self.conn.sqlquery(query,self.user_id,emo)
         result = list(result)
-        print(result)
+        
         input_vectorDB = list(map(float, result[0][2:]))
                     
         index = self.pc.Index('test')
@@ -58,21 +59,19 @@ class RecMusic(Thread):
         response = {'music': res, 'origin' : result, 'emotion': emo}
         self.response_list.append(response)
                      
-         
-    def getList(self):
-        return self.response_list
-    
     def isMusicReady(self):
-        if not self.dontRecommend and len(self.response_list) > 10:
+        if not self.dontRecommend and len(self.response_list) > 5:
             return True
         else:
             return False
-    def ctrlMusic(self, ctrl):
+    def ctrlMusic(self, arg):
+        
+        ctrl = arg['ctrl']
         print("ctrlMusic : In",ctrl)
 
-        if ctrl == "pause" :
+        if ctrl == "replay" :
             print("ctrlMusic:Pause", ctrl)
-            self.music_player.pause()
+            self.music_player.replay()
             print("ctrlMusic:Pause", ctrl)
         elif ctrl == "play" :
             self.dontRecommend = True
@@ -85,28 +84,44 @@ class RecMusic(Thread):
             self.music_player.stop()
         elif ctrl == "skip" :
             print("ctrlMusic:Skip", ctrl)
-            self.music_player.skip()
             self.updateWeight(self.response_list)
+            self.music_player.skip()
         elif ctrl == "info":
             self.music_player.get_info()    
         elif ctrl =="dontRecommend":
             self.dontRecommend = True
             self.music_player.stop()
-            
+        elif ctrl == "userWant":
+            self.updateWeight(self.response_list)
+            searching = f"{arg['artist']},{arg['song']}"
+            self.music_player.user_want(searching)
+        elif ctrl == "previous":
+            self.music_player.previous()
+        elif ctrl == "volumn_up" or "volumn_down":
+            if ctrl == "volumn_up":
+                self.music_player.volume('up')
+            elif ctrl == "volumn_down":
+                self.music_player.volume('down')
     def updateWeight(self,response_list):
         if self.music_player != None:
-            if type(self.music_player) == float:
-                standard_vector = normalize(pd.DataFrame([response_list[0]['music'][0]['features']]).T)
-                recommend_vector = normalize(pd.DataFrame([response_list[0]['origin'][0][2:]]).T)
-                if self.music_player < 60:
-                    result = standard_vector + (recommend_vector * -10)
-                    print(result)
-                else:
-                    pass
-            update_value = result[0]
-            up_columns = self.conn(f'DESCRIBE TB_MUSIC_FEATURES')
-            update_query = f"UPDATE TB_MUSIC_FEATURES SET "
-            update_query += ", ".join([f"{up_columns[i]} = {update_value[i]}" for i in range(len(up_columns))])
-            update_query += f" WHERE USER_ID = '{self.user_id}' AND EMOTION_VAL = '{response_list['emotion']}'"
-
-            self.conn(update_query)
+            if len(response_list) != 0:
+                standard_vector = normalize(pd.DataFrame(tuple(response_list[0]['music'][self.idx]['features'])).T)
+                recommend_vector = normalize(pd.DataFrame(response_list[0]['origin'][0][2:]).T)
+                if self.music_player.current_timer() < 60:
+                    result = standard_vector + (recommend_vector * -1.5)
+                    self.update_query(result)
+                elif self.music_player.current_timer() > 130:
+                    result = standard_vector + (recommend_vector * 1.5)
+                    self.update_query(result)
+                if len(response_list) <= self.idx:
+                    self.idx += 1
+                    self.idx = 0
+    def update_query(self,result):
+        update_value = result
+        columns = [row[0] for row in self.conn.sqlquery(f'DESCRIBE TB_MUSIC_FEATURES')]
+        up_columns = columns[2:]
+        update_query = f"UPDATE TB_MUSIC_FEATURES SET "
+        update_query += ", ".join([f"{up_columns[i]} = {update_value[0][i]}" for i in range(len(up_columns))])
+        update_query += f" WHERE USER_ID = '{self.user_id}' AND EMOTION_VAL = '{self.response_list[0]['emotion']}'"
+        self.conn.sqlquery(update_query)
+        

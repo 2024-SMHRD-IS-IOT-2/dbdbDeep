@@ -175,7 +175,7 @@ class InputHandler:
 
 
     ## 사용자 음성 받음
-    def get_user_input(self, filename, inputWaitTIme=10, silence_duration=2, silence_threshold=40):
+    def get_user_input(self, filename, inputWaitTIme=10, silence_duration=2, silence_threshold=5000):
         text, audio = "", ""
         
         recorder = PvRecorder(device_index=self.DEVICE_INDEX, frame_length=512)
@@ -194,7 +194,7 @@ class InputHandler:
 
             while True:
                 frame = recorder.read()
-                frameChk = np.mean(np.sqrt(abs(np.array(frame))))
+                frameChk = np.mean(abs(np.array(frame)))
                 
                 audio.extend(frame)
                 # 현재 시간

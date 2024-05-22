@@ -118,7 +118,7 @@ class TaskClassifier:
         ans = self.classify_llm.invoke(user_input_text).tool_calls
         
         arg = []
-        if len(ans)  == 0  :
+        if len(ans)  == 0 or ans[0]['name'] == 'normal_conversation':
             task = TASK.CONVERSATION
         else :
             arg = ans[0]['args']
@@ -126,8 +126,8 @@ class TaskClassifier:
                 task = TASK.IOT_CTRL
             elif ans[0]['name'] == 'control_music' :
                 task = TASK.MUSIC_CTRL
-            elif ans[0]['name'] == 'recommend_music' :
-                task = TASK.MUSIC_RECOMMEND
+            # elif ans[0]['name'] == 'recommend_music' :
+            #     task = TASK.MUSIC_RECOMMEND
             
         return task, arg
 
@@ -173,28 +173,45 @@ class TaskClassifier:
 
 
 ####### langchain tool calling ########
+# @tool
+# def recommend_music(emotion:str, ctrl:str)->int:
+#     """
+#         check if user ask for the music recommendation, or ask not to recommend.
+#         based on the user input, determine user's emotion from [Happy, Angry, Neutral, Sad]
+#         emotion value is Neutral by default
+#         RECOMMEND_NOW = "recommendNow"
+#         DONT_RECOMMEND = "dontRecommend"
+
+#     """
+#     return TASK.MUSIC_RECOMMEND
+
 @tool
-def recommend_music(emotion:str, ctrl:str)->int:
+def normal_conversation(isConv:bool)->int:
     """
-        check if user ask for the music recommendation, or ask not to recommend.
-        based on the user input, determine user's emotion from [Happy, Angry, Neutral, Sad]
-        emotion value is Neutral by default
-        RECOMMEND_NOW = "recommendNow"
-        DONT_RECOMMEND = "dontRecommend"
+        check if the user input is normal conversation.
+        not about controlling light or fan, not about music playing, stopping, skipping, or getting info.
 
     """
-    return TASK.MUSIC_RECOMMEND
+    return TASK.CONVERSATION
+
 
 @tool
-def control_music(ctrl:str)->int:
+def control_music(ctrl:str, artist:str, song:str)->int:
     """
-        check what user wants to do with the current music.
+        check what user wants to do with the music.
         also check if user don't want the music recommendation.
+        if user ask you to play music with artist and music title, play.
+        below is the list of user order
             STOP current music = "stop"
-            PAUSE current music = "pause"
-            PLAY or resume current music = "play"
+            REPLAY current music = 'replay'
+            PLAY current music = "play"
+            back or previous current music = "previous"
             SKIP current music = "skip"
+            Play the next music = "skip"
             get current music information = "info"
+            play artist,music title = "userWant"
+            UP volumn or sound abour current music = "volumn_up"
+            DOWN volumn or sound abour current music = "volumn_down"
             dont recommend music = "dontRecommend"
     """
     return TASK.MUSIC_CTRL

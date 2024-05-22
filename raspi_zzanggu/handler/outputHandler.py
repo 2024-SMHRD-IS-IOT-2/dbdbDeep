@@ -132,19 +132,20 @@ class HomeCtrl:
     def requestCtrl(self, args) :
         url = f"{self.addr}/homectrl"
 
+        try:
+            r = requests.get(url=url, params=args)
+        
+            print("args", args)
+            print(type(args))
 
-        r = requests.get(url=url, params=args)
-
-        print("args", args)
-        print(type(args))
-
-        if r.status_code == 200 :
-            print("success")
-            return r.status_code
-        else :
-            print('fail')
-            return r.status_code
-
-
+            if r.status_code == 200 :
+                print("success")
+                return r.status_code
+            else :
+                print('fail')
+                return r.status_code
+            
+        except:
+            print('실패')
 
 

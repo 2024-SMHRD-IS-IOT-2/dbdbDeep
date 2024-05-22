@@ -98,11 +98,11 @@ def main():
             userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(filename='./wav/userSentence.wav',
                                                                                           inputWaitTIme=10, 
                                                                                           silence_duration=2, 
-                                                                                          silence_threshold=40)
+                                                                                          silence_threshold=700)
             
-            ## TEST 유저음성
-            # userInputIn, user_input_text, user_input_audio = True, "난 그럭저럭 지내. 넌 뭐하니" , "./wav/userSentence.wav"
-            print("userInput in")            
+            # TEST 유저음성
+            # userInputIn, user_input_text, user_input_audio = True, "짱구야 다음 노래 틀어줘" , "./wav/userSentence.wav"
+            # print("userInput in")            
             ## 일정 시간동안 말 안했을떄. 아웃.
             if not userInputIn :
                 ## TODO : arduino serial 신호 전송 (off / sleep)
@@ -172,7 +172,9 @@ def main():
                     # convGen.reset_conversation()
                     # playConvAudio.clear_input()
                     
-                    recMusic.ctrlMusic(arg["ctrl"])
+                    recMusic.ctrlMusic(arg)
+                    
+                    
                     ## delay? wait? 이야기해주기?
                     ## TODO : 
                     pass
@@ -191,12 +193,12 @@ def main():
                         print("iot조작 실패")
                     # playConvAudio.clear_input()
                     
-            # print("exit conversation cycle")
-            # break # TEST. 대화 사이클 while 종료
+    #         print("exit conversation cycle")
+    #         break # TEST. 대화 사이클 while 종료
     
-        # print("exit main loop")
-        # break  # TEST. 메인 프로그램 loop 종료
-    ## 대기중인 쓰레드 종료
+    #     print("exit main loop")
+    #     break  # TEST. 메인 프로그램 loop 종료
+    # # 대기중인 쓰레드 종료
 
     [ev.set() for ev in [ttsEvent,convGenEvent,emoEvent,musicEvent]]
     convGen.push_input(THREAD_STATUS.FINISH, "")
@@ -209,10 +211,60 @@ def main():
 
 
 if __name__ == "__main__":
-
+    
     
     main()
 
+#     import wave
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+  
+# # shows the sound waves 
+#     def visualize(path: str): 
+    
+#     # reading the audio file 
+#         raw = wave.open(path) 
+      
+#     # reads all the frames  
+#     # -1 indicates all or max frames 
+#         signal = raw.readframes(-1) 
+#         signal = np.frombuffer(signal, dtype ="int16") 
+        
+#         signal = abs(signal)
+        
+#         # gets the frame rate 
+#         f_rate = raw.getframerate() 
+    
+#         # to Plot the x-axis in seconds  
+#         # you need get the frame rate  
+#         # and divide by size of your signal 
+#         # to create a Time Vector  
+#         # spaced linearly with the size  
+#         # of the audio file 
+#         time = np.linspace( 
+#             0, # start 
+#             len(signal) / f_rate, 
+#             num = len(signal) 
+#         ) 
+    
+#         # using matplotlib to plot 
+#         # creates a new figure 
+#         plt.figure(1) 
+        
+#         # title of the plot 
+#         plt.title("Sound Wave") 
+        
+#         # label of x-axis 
+#         plt.xlabel("Time") 
+        
+#         # actual plotting 
+#         plt.plot(time, signal) 
+        
+#         # shows the plot  
+#         # in new window 
+#         plt.show() 
 
+        
+#     visualize('./userSentence.wav')
 
 
