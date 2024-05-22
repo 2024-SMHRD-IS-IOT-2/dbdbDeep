@@ -77,7 +77,7 @@ class ConvGenThread(Thread, BaseCallbackHandler):
         elif token in ['.','?','!'] :
             self.sentenceToken+=token
             self.push_output(THREAD_STATUS.RUNNING, self.emo, self.sentenceToken)
-            print("emotion : ", self.emo, "sentence token : ", self.sentenceToken)
+            print("convGen: emotion=", self.emo, "sentence token=", self.sentenceToken)
             self.sentenceToken = ""
         else :
             self.sentenceToken += token
@@ -188,7 +188,7 @@ class TaskClassifier:
 @tool
 def normal_conversation(isConv:bool)->int:
     """
-        check if the user input is normal conversation.
+        this function is only when if the user input is normal conversation.
         not about controlling light or fan, not about music playing, stopping, skipping, or getting info.
 
     """
@@ -208,10 +208,9 @@ def control_music(ctrl:str, artist:str, song:str)->int:
             back or previous current music = "previous"
             SKIP current music = "skip"
             Play the next music = "skip"
-            get current music information = "info"
             play artist,music title = "userWant"
-            UP volumn or sound abour current music = "volumn_up"
-            DOWN volumn or sound abour current music = "volumn_down"
+            UP volumn or sound about current music = "volumn_up"
+            DOWN volumn or sound about current music = "volumn_down"
             dont recommend music = "dontRecommend"
     """
     return TASK.MUSIC_CTRL
@@ -226,8 +225,10 @@ def control_iot(device:int, power:int, sec:int)-> str:
         if second is not given, default second is 0
         for device index,
         fan = 0
+        air-conditioner = 0
         living-room = 1
         bed-room = 2
+        bathroom = 3
     """    
     return "controlIOT"
 

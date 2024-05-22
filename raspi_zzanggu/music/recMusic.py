@@ -5,8 +5,7 @@ from common.sql import MysqlConn
 from common.thread import Thread, THREAD_STATUS
 from enum import Enum
 from music.musicPlayer import MusicPlayer
-import os
-from dotenv import load_dotenv
+
 class MUSIC_CTRL(Enum):
     STOP = 0
     PAUSE = 1
@@ -16,9 +15,8 @@ class MUSIC_CTRL(Enum):
     RECOMMEND_NOW = 5
     DONT_RECOMMEND = 6
 
-class RecMusic(Thread):
-    def __init__(self, event,PINECONE_API_KEY,sqlconn:MysqlConn,music_player:MusicPlayer,user_id):
-        super().__init__(target=self.musicVectorCals,event=event)
+class RecMusic:
+    def __init__(self, PINECONE_API_KEY,sqlconn:MysqlConn,music_player:MusicPlayer,user_id):
         self.pc = Pinecone(api_key=PINECONE_API_KEY)
         self.conn = sqlconn
         self.response_list = []
@@ -26,24 +24,9 @@ class RecMusic(Thread):
         self.user_id = user_id
         self.dontRecommend = False
         self.idx = 0
-    def musicVectorCals(self):
-        while True:
-            self.event.wait()
-            if not self.input_queue.get_nowait():
-                flag, emo = self.input_queue.get_nowait()
-                
-                if flag == THREAD_STATUS.FINISH:
-                    self.push_output(flag, "","")
-                    print("musicThread break")
-                    break
-                elif flag == THREAD_STATUS.DONE:
-                    self.push_output(flag, "","")
-                    self.event.clear()
 
-                elif flag == THREAD_STATUS.RUNNING: 
-                    
-                    self.just_music(emo)
-    def just_music(self,emo):
+
+    def emo_2_music(self,emo):
         query = "SELECT * FROM TB_MUSIC_FEATURES WHERE USER_ID = %s AND EMOTION_VAL = %s"
         result = self.conn.sqlquery(query,self.user_id,emo)
         result = list(result)
@@ -58,36 +41,34 @@ class RecMusic(Thread):
                     ]
         response = {'music': res, 'origin' : result, 'emotion': emo}
         self.response_list.append(response)
+        print("리스폰스 리스트 길이: ", len(self.response_list))
                      
     def isMusicReady(self):
-        if not self.dontRecommend and len(self.response_list) > 5:
+        print("isMusicReady???")
+        print("test:", self.dontRecommend, len(self.response_list))
+        temp = self.music_player.sp.current_user_playing_track()
+        if not self.dontRecommend and len(self.response_list) > 1 and temp != None and not temp['is_playing']:
             return True
         else:
             return False
+        
+
     def ctrlMusic(self, arg):
         
         ctrl = arg['ctrl']
-        print("ctrlMusic : In",ctrl)
 
         if ctrl == "replay" :
-            print("ctrlMusic:Pause", ctrl)
             self.music_player.replay()
-            print("ctrlMusic:Pause", ctrl)
         elif ctrl == "play" :
-            self.dontRecommend = True
-            print("ctrlMusic:Play", ctrl)
+            self.dontRecommend = False
             emo = "Neutral" if len(self.response_list) == 0 else self.response_list[0]['emotion']
-            self.just_music(emo)
+            self.emo_2_music(emo)
             self.music_player.play(self.response_list)
         elif ctrl == "stop" :
-            print("ctrlMusic:Stop", ctrl)
             self.music_player.stop()
         elif ctrl == "skip" :
-            print("ctrlMusic:Skip", ctrl)
             self.updateWeight(self.response_list)
-            self.music_player.skip()
-        elif ctrl == "info":
-            self.music_player.get_info()    
+            self.music_player.skip()  
         elif ctrl =="dontRecommend":
             self.dontRecommend = True
             self.music_player.stop()

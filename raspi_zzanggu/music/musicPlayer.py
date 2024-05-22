@@ -22,7 +22,8 @@ class MusicPlayer() :
             redirect_uri=SPOTIFY_URI,
             scope="user-modify-playback-state user-read-playback-state"
         ))
-        #webbrowser.open_new('https://open.spotify.com/')
+        webbrowser.open_new('https://open.spotify.com/')
+
         
         
     

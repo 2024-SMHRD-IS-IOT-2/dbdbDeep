@@ -15,8 +15,8 @@ class InputHandler:
         self.PORCU_KEYWORD_FILE_PATH = keyword_file_path
         self.PORCU_MODEL_FILE_PATH = model_file_path
         self.PORCU_SENSITIVITY = sensitivity
-        
         self.DEVICE_INDEX = -1
+
         for i, device in enumerate(PvRecorder.get_available_devices()):
             print('Device %d: %s' % (i, device))
             if "MAONO" in device :
@@ -135,8 +135,8 @@ class InputHandler:
 
         recorder = PvRecorder(
             frame_length=porcupine.frame_length,
-            device_index=args.audio_device_index
-#             device_index = self.DEVICE_INDEX
+            # device_index=args.audio_device_index
+            device_index = self.DEVICE_INDEX
             
             )
         self.DEVICE_INDEX = args.audio_device_index
@@ -175,7 +175,7 @@ class InputHandler:
 
 
     ## 사용자 음성 받음
-    def get_user_input(self, filename, inputWaitTIme=10, silence_duration=2, silence_threshold=5000):
+    def get_user_input(self, filename, inputWaitTime=10, silence_duration=2, silence_threshold=5000):
         text, audio = "", ""
         
         recorder = PvRecorder(device_index=self.DEVICE_INDEX, frame_length=512)
@@ -189,7 +189,7 @@ class InputHandler:
         
         try:
             recorder.start()
-            silenceStart = time.time() + inputWaitTIme
+            silenceStart = time.time() + inputWaitTime
             print("talking : receiving user Input...")
 
             while True:
@@ -216,7 +216,7 @@ class InputHandler:
                     break
                 ## 주어진 시간동안 인풋 안받음.
                 elif silenceEnd-silenceStart >= 0 and not isTalking:
-                    print(f"user input not detected for {inputWaitTIme} sec. back to Triggering")
+                    print(f"user input not detected for {inputWaitTime} sec. back to Triggering")
                     return False, "", ""
 
             ## wav 파일로 사용자 음성 저장
@@ -228,13 +228,10 @@ class InputHandler:
             ## wav 파일 문자열로.
             r = sr.Recognizer()
             try :
-                print("test1")
                 audioFile = sr.AudioFile(filename)
                 with audioFile as source :
                     audio = r.record(source)
-                print("test3")
                 userInputString = r.recognize_google(audio, language='ko-KR')
-                print("test2")
                 return True, userInputString, filename
             except Exception as e :
                 print("error1 = ", e)
