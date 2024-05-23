@@ -4,6 +4,7 @@ import requests
 import time
 import sounddevice as sd
 import soundfile as sf
+import serial
 
 ## typecast TTS 오디오 생성 쓰레드
 ## 인풋 큐 : flag, emotion, text
@@ -31,17 +32,18 @@ class GenerateOutputAudioThread(Thread):
                     self.cnt = 0
                     self.push_output(flag, "", "")
 
-                    print("audio creation thread clear")
+                    print("output: audio creation thread clear")
                     self.event.clear() #tts쓰레드 대기모드로
                 
                 ## TTS 작업
                 elif flag == THREAD_STATUS.RUNNING :
                     filename = f"./wav/ttsOut{self.cnt}.wav"
                     ## TEST : 미리 생성돼있는 넘들로 대신 출력
-                    # self.do_tts(text,filename,emo)
                     time.sleep(1) ## TEST tts 생성 딜레이 
+                    # self.do_tts(text,filename,emo)
+
                     self.push_output(flag, emo, filename)
-                    print("tts file created : ", filename)
+                    print("output: tts file created : ", filename)
                     self.cnt+=1
                      
     ## tts 처리함수
@@ -70,13 +72,16 @@ class GenerateOutputAudioThread(Thread):
                     f.write(r.content)
                 break
             else :
-                print("wait 0.1sec. processing tts")
+                print("output: wait 0.1sec. processing tts")
                 time.sleep(0.1)
                     
 
+## 음성 출력 대기 클래스
+## 대화로 분류될 시 출력
 class PlayAudio:
-    def __init__(self, queue):
-        self.input_queue = queue
+    def __init__(self, input_q, ser:serial):
+        self.input_queue = input_q
+        self.ser = ser
 
     # 인풋 큐 클리어 함수 (대화가 아닐 시)
     def clear_input(self):
@@ -86,10 +91,10 @@ class PlayAudio:
                 break
 
             try :
-                print("remove files")
+                print("output: remove files")
                 # os.remove(filename)
             except FileNotFoundError:
-                print("해당 파일을 찾을 수 없음.", filename)
+                print("output: 해당 파일을 찾을 수 없음.", filename)
                 break
 
     def play_all_conv_file(self):
@@ -99,28 +104,27 @@ class PlayAudio:
                 if flag == THREAD_STATUS.FINISH:
                     break
                 elif flag == THREAD_STATUS.DONE :
-                    print("all audio played")
+                    print("output: all audio played")
                     break
                 
                 elif flag == THREAD_STATUS.RUNNING :
                     data, fs = sf.read(filename, dtype='float32')  
                     time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
-                    # TODO : 아두이노 시리얼로 감정 보내기
+                    self.ser.write(emo.encode())
 
-                    print("play conv audio ", filename)
+                    print("output: play conv audio ", filename)
                     sd.play(data, fs)
                     status = sd.wait()  # Wait until file is done playing
                     # os.remove(filename) # remove file after playing
                     time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
 
+    ## 사전 대답 파일 출력 
     def play_file(self, filename):
         data, fs = sf.read(filename, dtype='float32')  
-        # TODO : 아두이노 시리얼로 감정 보내기
 
-        print("play sound ", filename)
+        print("output: play sound ", filename)
         sd.play(data, fs)
         status = sd.wait()  # Wait until file is done playing
-        # os.remove(filename) # remove file after playing
         time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
                     
 
@@ -131,20 +135,18 @@ class HomeCtrl:
 
     def requestCtrl(self, args) :
         url = f"{self.addr}/homectrl"
-
-
-        r = requests.get(url=url, params=args)
-
-        print("args", args)
-        print(type(args))
-
-        if r.status_code == 200 :
-            print("success")
-            return r.status_code
-        else :
-            print('fail')
-            return r.status_code
-
-
+        
+        try:
+            r = requests.get(url=url, params=args)
+            if r.status_code == 200 :
+                print("통신 성공")
+                return r.status_code
+            else :
+                print('통신 실패')
+                return r.status_code
+        except:
+            print('request 오류')
+            return(500)
+            
 
 

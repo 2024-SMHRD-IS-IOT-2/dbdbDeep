@@ -27,4 +27,4 @@ def homestat():
 
 
 if __name__ == "__main__" :   ## 얘를 직접 실행시켰을때만 실행해라.
-    app.run(host="210.183.87.121", port=5000)
+    app.run(host="localhost", port=5000)

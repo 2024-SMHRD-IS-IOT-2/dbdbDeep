@@ -9,12 +9,15 @@ class MysqlConn :
 
     ## args 튜플 형식으로
     def sqlquery(self, query, *arg) :
+        result = ""
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(query, arg)
                 result = cursor.fetchall()
                 self.conn.commit()
                 cursor.close()
+        except:
+            print("sql error")
         finally:
             print("sql query.")
             

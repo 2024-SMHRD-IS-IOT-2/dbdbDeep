@@ -16,7 +16,10 @@ spotipy
 selenium == 4.20.0
 tensorflow
 keras
-scikit-learn
+scikit-learn == 1.4.0
 nlpaug
 torch
-transformers
+sentence-transformers
+librosa
+serial
+pyserial

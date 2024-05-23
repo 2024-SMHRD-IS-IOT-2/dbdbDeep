@@ -4,20 +4,26 @@ import threading
 PIN_LIVING = 17
 PIN_BED = 18
 PIN_FAN = 21
+PIN_BATH = 27
 
 gpio.setmode(gpio.BCM)
 gpio.setup(PIN_BED, gpio.OUT)   ## bedrooms
 gpio.setup(PIN_LIVING, gpio.OUT)  ## livingroom
 gpio.setup(PIN_FAN, gpio.OUT) ## fan
+gpio.setup(PIN_BATH, gpio.OUT)
 
-p1 = gpio.PWM(PIN_LIVING, 500)  ## 핀, 주파수
+p1 = gpio.PWM(PIN_LIVING, 500)  ## livingroom
 p1.start(0)
-p2 = gpio.PWM(PIN_BED, 500)  ## 핀, 주파수
+p2 = gpio.PWM(PIN_BED, 500)  ## bedroom
 p2.start(0)
+p3 = gpio.PWM(PIN_BATH, 500)  ## bathroom
+p3.start(0)
 
 BRIGHT_LIVING = 0
 BRIGHT_BED = 0
+BRIGHT_BATH = 0
 POWER_FAN = 0
+
 
 def ctrlThread(loc, power,sec) :
     thread = threading.Timer(sec, control, args=(loc,power))
@@ -46,6 +52,11 @@ def control(loc, power) :
 
         p2.ChangeDutyCycle(power)
         BRIGHT_BED = power
+        
+    elif loc == 3:
+
+        p3.ChangeDutyCycle(power)
+        BRIGHT_BATH = power
     
     
     
@@ -55,6 +66,7 @@ def curStatus():
     return {
             'FAN':POWER_FAN,
             'BED':BRIGHT_BED,
-            'LIVING':BRIGHT_LIVING
+            'LIVING':BRIGHT_LIVING,
+            'BATH':BRIGHT_BATH
             }
 

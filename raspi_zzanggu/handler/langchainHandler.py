@@ -52,7 +52,7 @@ class ConvGenThread(Thread, BaseCallbackHandler):
         
     def target(self):
         while True:
-            #!TODO conversation generation 처리
+            # conversation generation 처리
             self.event.wait()
             if not self.input_queue.empty():
                 flag, sentence = self.input_queue.get_nowait()
@@ -77,7 +77,7 @@ class ConvGenThread(Thread, BaseCallbackHandler):
         elif token in ['.','?','!'] :
             self.sentenceToken+=token
             self.push_output(THREAD_STATUS.RUNNING, self.emo, self.sentenceToken)
-            print("emotion : ", self.emo, "sentence token : ", self.sentenceToken)
+            print("convGen: emotion=", self.emo, "sentence token=", self.sentenceToken)
             self.sentenceToken = ""
         else :
             self.sentenceToken += token
@@ -118,7 +118,7 @@ class TaskClassifier:
         ans = self.classify_llm.invoke(user_input_text).tool_calls
         
         arg = []
-        if len(ans)  == 0  :
+        if len(ans)  == 0 or ans[0]['name'] == 'normal_conversation':
             task = TASK.CONVERSATION
         else :
             arg = ans[0]['args']
@@ -126,75 +126,39 @@ class TaskClassifier:
                 task = TASK.IOT_CTRL
             elif ans[0]['name'] == 'control_music' :
                 task = TASK.MUSIC_CTRL
-            elif ans[0]['name'] == 'recommend_music' :
-                task = TASK.MUSIC_RECOMMEND
             
         return task, arg
 
 
 
-## thread version
-# class TaskClassifierThread(Thread):
-#     def __init__(self, api_key, event, temp=0.5, max_tokens=300):
-#         super().__init__(target=self.target,event=event)
-        
-#         self.classify_llm = ChatOpenAI(
-#         api_key=api_key,
-#         temperature=temp, 
-#         max_tokens = max_tokens,
-#         model_name='gpt-4',
-#         ).bind_tools(llm_ctrl_list)
-        
-
-#     def target(self):
-
-#         user_input_text = self.input_queue.get()
-
-#         print(user_input_text)
-#         task = TASK.NONE
-#         ans = self.classify_llm.invoke(user_input_text).tool_calls
-        
-#         arg = []
-#         if len(ans)  == 0 :
-#             task = TASK.CONVERSATION
-#         else :
-#             arg = ans[0]['args']
-#             if ans[0]['name'] == 'control_iot' :
-#                 task = TASK.IOT_CTRL
-#             elif ans[0]['name'] == 'control_music' :
-#                 task = TASK.MUSIC_CTRL
-#             elif ans[0]['name'] == 'recommend_music' :
-#                 task = TASK.MUSIC_RECOMMEND
-            
-#         self.output_queue.put((task,arg))
-#         return task, arg
-
-
-
-
 ####### langchain tool calling ########
 @tool
-def recommend_music(emotion:str, ctrl:str)->int:
+def normal_conversation(isConv:bool)->int:
     """
-        check if user ask for the music recommendation, or ask not to recommend.
-        based on the user input, determine user's emotion from [Happy, Angry, Neutral, Sad]
-        emotion value is Neutral by default
-        RECOMMEND_NOW = "recommendNow"
-        DONT_RECOMMEND = "dontRecommend"
+        this function is only when if the user input is normal conversation.
+        not about controlling light or fan, not about music playing, stopping, skipping, or getting info.
 
     """
-    return TASK.MUSIC_RECOMMEND
+    return TASK.CONVERSATION
+
 
 @tool
-def control_music(ctrl:str)->int:
+def control_music(ctrl:str, artist:str, song:str)->int:
     """
-        check what user wants to do with the current music.
+        check what user wants to do with the music.
+        if your input contains music, song, "음악", "노래" do one of the following. 
         also check if user don't want the music recommendation.
+        if user ask you to play music with artist and music title, play.
+        below is the list of user order
             STOP current music = "stop"
-            PAUSE current music = "pause"
-            PLAY or resume current music = "play"
+            REPLAY current music = 'replay'
+            back or previous current music = "previous"
             SKIP current music = "skip"
-            get current music information = "info"
+            PLAY current music = "play"
+            Play the next music = "skip"
+            play music of given artist and title = "userWant"
+            UP volumn or sound about current music = "volumn_up"
+            DOWN volumn or sound about current music = "volumn_down"
             dont recommend music = "dontRecommend"
     """
     return TASK.MUSIC_CTRL
@@ -209,8 +173,10 @@ def control_iot(device:int, power:int, sec:int)-> str:
         if second is not given, default second is 0
         for device index,
         fan = 0
+        air-conditioner = 0
         living-room = 1
         bed-room = 2
+        bathroom = 3
     """    
     return "controlIOT"
 
