@@ -46,10 +46,19 @@ class RecMusic:
                      
     def isMusicReady(self):
         print("isMusicReady???")
-        print("test:", self.dontRecommend, len(self.response_list))
         temp = self.music_player.sp.current_user_playing_track()
-        if not self.dontRecommend and len(self.response_list) > 1 and temp != None and not temp['is_playing']:
-            return True
+
+        print("test:", self.dontRecommend, len(self.response_list))
+
+
+
+        if not self.dontRecommend and len(self.response_list) > 1 :
+            if temp == None :
+                return True
+            elif temp['is_playing'] :
+                return False
+            else :
+                return True 
         else:
             return False
         

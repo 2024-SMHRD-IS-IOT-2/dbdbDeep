@@ -73,7 +73,7 @@ def main():
         ## 대화파일 인덱스 리셋
         wavInd = 0
 
-        ser.write(b"clean")
+        ser.write(b"sleep")
 
         ## 키워드 인식
         inputHandle.recognize_keyword()
