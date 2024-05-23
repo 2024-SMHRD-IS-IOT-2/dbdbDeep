@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mysql_client/mysql_client.dart';
 
-
 final storage = FlutterSecureStorage(); // 사용자가 앱을 종료하거나 재부팅하더라도 데이터를 안전하게 보관할 수 있도록 해줌
-
-
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -111,7 +108,7 @@ void login(id, pw, context) async {
   // 데이터베이스 연결
   await conn.connect();
 
-  var result = await conn.execute("SELECT * FROM TB_USERS WHERE USER_ID = :id AND USER_PW = :pw", {
+  var result = await conn.execute("SELECT * FROM TB_USERS WHERE USER_ID = :id AND USER_PW = sha2(:pw,256)", {
     "id": id,
     "pw": pw,
   });

@@ -10,44 +10,29 @@ class Today_piechart extends StatefulWidget {
 }
 
 class _Today_piechartState extends State<Today_piechart> {
-  double happinessVal = 0;
-  double sadnessVal = 0;
+  double happyVal = 0;
+  double sadVal = 0;
   double angryVal = 0;
-  double surpriseVal = 0;
-  double fearVal = 0;
-  double disgustVal = 0;
   double neutralVal = 0;
 
   Future<void> loadEmotionData() async {
     var userDataList = await dbConnector();
-    // 각 감정에 해당하는 값을 초기화합니다.
-    happinessVal = 0;
-    sadnessVal = 0;
-    angryVal = 0;
-    surpriseVal = 0;
-    fearVal = 0;
-    disgustVal = 0;
-    neutralVal = 0;
+    // // 각 감정에 해당하는 값을 초기화합니다.
+    // happinessVal = 0;
+    // sadnessVal = 0;
+    // angryVal = 0;
+    // neutralVal = 0;
 
     for (var userData in userDataList) {
       switch (userData['EMOTION_VAL']) {
-        case 'Happiness':
-          happinessVal = double.parse(userData['percentage']);
+        case 'Happy':
+          happyVal = double.parse(userData['percentage']);
           break;
-        case 'Sadness':
-          sadnessVal = double.parse(userData['percentage']);
+        case 'Sad':
+          sadVal = double.parse(userData['percentage']);
           break;
         case 'Angry':
           angryVal = double.parse(userData['percentage']);
-          break;
-        case 'Surprise':
-          surpriseVal = double.parse(userData['percentage']);
-          break;
-        case 'Fear':
-          fearVal = double.parse(userData['percentage']);
-          break;
-        case 'Disgust':
-          disgustVal = double.parse(userData['percentage']);
           break;
         case 'Neutral':
           neutralVal = double.parse(userData['percentage']);
@@ -71,25 +56,19 @@ class _Today_piechartState extends State<Today_piechart> {
       body: Center(
         child: PieChart(
           dataMap: {
-            '기쁨': happinessVal,
-            '슬픔': sadnessVal,
+            '기쁨': happyVal,
+            '슬픔': sadVal,
             '분노': angryVal,
-            '놀람': surpriseVal,
-            '불안': fearVal,
-            '혐오': disgustVal,
             '안정': neutralVal,
           }, // 차트에 표시할 데이터
           animationDuration: Duration(milliseconds: 800), // 애니메이션 지속 시간
           chartLegendSpacing: 45, // 차트와 범례 사이의 간격
-          chartRadius: MediaQuery.of(context).size.width / 1.8, // 차트 반지름
+          chartRadius: MediaQuery.of(context).size.width / 2.5, // 차트 반지름
           colorList: [
-            Colors.pink,
+            Colors.yellow, //Color(0xFF81C784),
             Colors.blue,
             Colors.red,
-            Colors.yellow,
-            Colors.deepPurple,
-            Colors.black,
-            Colors.grey,
+            Colors.green,
           ], // 차트 조각들의 색상 목록
           initialAngleInDegree: 0, // 차트의 시작 각도
           chartType: ChartType.ring, // 차트 타입 (링)
@@ -116,8 +95,6 @@ class _Today_piechartState extends State<Today_piechart> {
     );
   }
 }
-
-
 
 
 
@@ -164,5 +141,3 @@ FROM (
 
   return userDataList;
 }
-
-

@@ -144,7 +144,7 @@ void joinMember(BuildContext context, String id, String pw, String name, String 
   await conn.connect();
 
   var result = await conn.execute(
-      "insert into TB_USERS values(:id, :pw, :name, :addr, :tel, :nick, :birth, NOW())",
+      "insert into TB_USERS values(:id, sha2(:pw,256), :name, :addr, :tel, :nick, :birth, NOW())",
       {
         "id": id,
         "pw": pw,

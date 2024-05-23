@@ -96,12 +96,12 @@ class _Neutral_linechartState extends State<Neutral_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                        color: Colors.grey,
+                        color: Color(0xFF81C784),
                         width: 4
                     )
                   ],
                 )
-                    : CircularProgressIndicator(),
+                    : Center(child: CircularProgressIndicator()),
               ),
             ),
           ],

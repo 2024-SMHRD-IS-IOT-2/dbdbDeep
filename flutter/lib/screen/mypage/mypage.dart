@@ -30,7 +30,6 @@ class Mypage extends StatelessWidget {
             UserInfoField(label: '이름', value: member.userName),
             UserInfoField(label: '주소', value: member.userAddr),
             UserInfoField(label: '전화번호', value: member.userTel),
-            UserInfoField(label: '닉네임', value: member.userNick),
             UserInfoField(label: '생년월일', value: member.userBirth),
             UserInfoField(label: '가입일시', value: member.joinedAt),
 

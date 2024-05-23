@@ -109,20 +109,14 @@ String getYoutubeId(String emotion) {
   switch (emotion) {
     case 'Neutral':
       return 'AOPue13SZe8'; // 안정
-    case 'Happiness':
+    case 'Happy':
       return '4drvuDQpLUk'; // 기쁨
-    case 'Surprise':
-      return 'VjFV2eoBtxo'; // 놀람
-    case 'Fear':
-      return 'tZ5xgpDb-w0'; // 불안
-    case 'Sadness':
+    case 'Sad':
       return 'PzweJS3SOng'; // 슬픔
     case 'Angry':
       return 'PMJ4d7LY8Ao'; // 분노
-    case 'Disgust':
-      return 'Cf2axcUf0lY'; // 혐오
     default:
-      return 'Fs0qitF-qWM'; // 기본값
+      return 'XHMdIA6bEOE'; // 기본값, 짱구오프닝
   }
 }
 

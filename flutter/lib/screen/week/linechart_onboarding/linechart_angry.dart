@@ -37,7 +37,7 @@ class _Angry_linechartState extends State<Angry_linechart> {
       setState(() {
         startDate = userDataList.first['start_date'];
         endDate = userDataList.first['end_date'];
-        emotion = '화남'; // 'Angry' 대신 '화남'으로 변경
+        emotion = '분노'; // 'Angry' 대신 '화남'으로 변경
         chartData = userDataList.map((data) {
           return SalesData(data['date'], double.parse(data['percentage']));
         }).toList();
@@ -92,12 +92,12 @@ class _Angry_linechartState extends State<Angry_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                        color: Colors.red,
+                        color: Color(0xFFB71C1C),
                         width: 4
                     )
                   ],
                 )
-                    : CircularProgressIndicator(),
+                    : Center(child: CircularProgressIndicator()),
               ),
             ),
           ],

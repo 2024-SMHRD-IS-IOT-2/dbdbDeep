@@ -11,7 +11,6 @@ class MemberModel {
   String userName;
   String userAddr;
   String userTel;
-  String userNick;
   DateTime userBirth;
   DateTime joinedAt;
 
@@ -21,7 +20,6 @@ class MemberModel {
     required this.userName,
     required this.userAddr,
     required this.userTel,
-    required this.userNick,
     required this.userBirth,
     required this.joinedAt,
   });
@@ -32,7 +30,6 @@ class MemberModel {
     userName: json["USER_NAME"],
     userAddr: json["USER_ADDR"],
     userTel: json["USER_TEL"],
-    userNick: json["USER_NICK"],
     userBirth: DateTime.parse(json["USER_BIRTH"]),
     joinedAt: DateTime.parse(json["JOINED_AT"]),
   );
@@ -43,7 +40,6 @@ class MemberModel {
     "USER_NAME": userName,
     "USER_ADDR": userAddr,
     "USER_TEL": userTel,
-    "USER_NICK": userNick,
     "USER_BIRTH": "${userBirth.year.toString().padLeft(4, '0')}-${userBirth.month.toString().padLeft(2, '0')}-${userBirth.day.toString().padLeft(2, '0')}",
     "JOINED_AT": joinedAt.toIso8601String(),
   };

@@ -28,7 +28,7 @@ class Today extends StatelessWidget {
                   'count': 0,
                   'percentage': 0,
                   'ranking': 0,
-                  'creation_date': '기본값2',
+                  'creation_date': '데이터없음',
                 },
               ];
             }
@@ -45,12 +45,12 @@ class Today extends StatelessWidget {
                     String message2 = '';
                     // EMOTION_VAL 값을 한국어 감정 값으로 변환
                     switch (userData['EMOTION_VAL']) {
-                      case 'Happiness':
+                      case 'Happy':
                         emotionKor = '기쁨';
                         message1 = '기쁨을 유지하고 즐거움을 경험하기 위해 취미생활을 추천합니다.';
                         message2= '취미나 관심사를 추구하세요. 자신이 즐기는 활동을 통해 기쁨을 느낄 수 있으며, 창의성을 발휘하고 성취감을 느낄 수 있습니다.';
                         break;
-                      case 'Sadness':
+                      case 'Sad':
                         emotionKor = '슬픔';
                         message1 = '슬픔을 느낄떄 일기쓰기를 추천합니다';
                         message2 = '마음의 감정을 글로 표현하는 것은 마음의 짐을 가볍게 해주고 감정을 정리하는 데 도움이 됩니다. 오늘 느낀 슬픔을 일기에 담아보세요.';
@@ -60,30 +60,15 @@ class Today extends StatelessWidget {
                         message1 = '분노의 감정이 느껴진다면 자신에게 질문을 해보세요';
                         message2 = '화가 난 이유를 깊이 생각해보고 자신에게 질문해보세요. 이를 통해 감정을 이해하고 어떻게 대응할지를 고민할 수 있습니다.';
                         break;
-                      case 'Surprise':
-                        emotionKor = '놀람';
-                        message1 = '놀란 감정을 진정시키기 위해 깊게 명상을 추천합니다';
-                        message2 = '놀란 순간에 깊게 숨을 들이마시고, 집중력을 되찾을 수 있도록 몇 초간의 짧은 명상을 시도해보세요. 이것은 감정을 조절하고 마음을 진정시키는 데 도움이 될 수 있습니다.';
-                        break;
-                      case 'Fear':
-                        emotionKor = '불안';
-                        message1 = '불안한 감정을 해소하는데 규칙적인 운동이 도움이 됩니다 ';
-                        message2 = '운동은 스트레스를 줄이고 불안을 해소하는 데 효과적입니다. 걷기, 조깅, 요가 등의 운동을 통해 긍정적인 에너지를 얻어보세요.';
-                        break;
-                      case 'Disgust':
-                        emotionKor = '혐오';
-                        message1 = '혐오의 감정을 멈추기위해 타인의 관점에서 이해하는 것을 추천합니다';
-                        message2 = '다른 사람의 관점을 이해하려고 노력하세요. 상황을 다른 사람의 관점에서 바라보고 이해하려는 노력은 혐오감정을 줄이는 데 도움이 됩니다.';
-                        break;
                       case 'Neutral':
                         emotionKor = '안정';
-                        message1 = '안정적인 생활을 유지하기 위해 규칙적인 생활을 추천합니다.';
+                        message1 = '안정적인 생활을 위해 규칙적인 생활을 추천합니다.';
                         message2 = '일정한 수면 패턴과 식사 시간을 가지고, 하루 일정을 계획해보세요. 이렇게 하면 예상 가능하고 안정감 있는 일상을 유지할 수 있습니다.';
                         break;
                       default:
-                        emotionKor = '알 수 없는 감정';
-                        message1 = '알 수 없는 감정입니다';
-                        message2 = '알 수 없는 감정입니다';
+                        emotionKor = '데이터없음'; //
+                        message1 = '오늘 탐지된 감정이 없습니다';
+                        message2 = '반려봇 짱구와 여러가지 이야기를 나눠보세요';
                         break;
                     }
 
