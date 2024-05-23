@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# In[4]:
+
+
 import librosa
 import numpy as np
+import pandas as pd
 import nlpaug.augmenter.audio as naa 
-from tensorflow import keras
-import joblib
-from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
 
@@ -111,17 +112,3 @@ class text_embedding():
         X_embed = np.concatenate((X, embedding_vec), axis = 1)
         return X_embed
 
-def getOutputs(user_input_audio,user_input_text):
-    model_path = Path('./model/model_05-0.8016.keras').absolute()
-    scaler_path = Path('./model/sscaler_9.pkl').absolute()
-    scaler = joblib.load(scaler_path)
-    pre_trained_embed_model = 'jhgan/ko-sroberta-multitask'
-    model = keras.models.load_model(model_path)
-    audio_features = extract_feature(user_input_audio)
-    audio_features_realized = np.real(audio_features)
-    txt_embedder = text_embedding(model_name = pre_trained_embed_model)
-    txt_embed = txt_embedder.transform(audio_features_realized,user_input_text)
-    scaled_features = scaler.transform(txt_embed)
-    result = np.expand_dims(scaled_features,axis=1)
-    result = model.predict(result)
-    return result

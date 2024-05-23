@@ -135,8 +135,8 @@ class InputHandler:
 
         recorder = PvRecorder(
             frame_length=porcupine.frame_length,
-            # device_index=args.audio_device_index
-            device_index = self.DEVICE_INDEX
+            device_index=args.audio_device_index
+#             device_index = self.DEVICE_INDEX
             
             )
         self.DEVICE_INDEX = args.audio_device_index
@@ -235,11 +235,13 @@ class InputHandler:
                 return True, userInputString, filename
             except Exception as e :
                 print("error1 = ", e)
+                return False, "noise", ""
                 
                 
         except Exception as e:
             print("error2 =", e)
         finally:
             recorder.delete()
+
         
         return False, "", ""

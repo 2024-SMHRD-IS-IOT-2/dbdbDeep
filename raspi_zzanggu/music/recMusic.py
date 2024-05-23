@@ -20,11 +20,11 @@ class RecMusic:
         self.pc = Pinecone(api_key=PINECONE_API_KEY)
         self.conn = sqlconn
         self.response_list = []
+        self.emo2play = []
         self.music_player = music_player
         self.user_id = user_id
         self.dontRecommend = False
         self.idx = 0
-
 
     def emo_2_music(self,emo):
         query = "SELECT * FROM TB_MUSIC_FEATURES WHERE USER_ID = %s AND EMOTION_VAL = %s"
@@ -41,7 +41,8 @@ class RecMusic:
                     ]
         response = {'music': res, 'origin' : result, 'emotion': emo}
         self.response_list.append(response)
-        print("리스폰스 리스트 길이: ", len(self.response_list))
+        
+#         print("리스폰스 리스트 길이: ", len(self.response_list))
                      
     def isMusicReady(self):
         print("isMusicReady???")
@@ -63,19 +64,26 @@ class RecMusic:
             self.dontRecommend = False
             emo = "Neutral" if len(self.response_list) == 0 else self.response_list[0]['emotion']
             self.emo_2_music(emo)
-            self.music_player.play(self.response_list)
+            emotions = [self.response_list[i]['emotion'] for i in range(len(self.response_list))]
+            max_emo = max(emotions,key=emotions.count)
+            self.emo2play.append(list(filter(lambda x : x['emotion']==max_emo,self.response_list)))
+            self.music_player.play(self.emo2play[0])
+            self.response_list = []
         elif ctrl == "stop" :
             self.music_player.stop()
         elif ctrl == "skip" :
-            self.updateWeight(self.response_list)
+            self.updateWeight(self.emo2play[0])
             self.music_player.skip()  
         elif ctrl =="dontRecommend":
             self.dontRecommend = True
             self.music_player.stop()
         elif ctrl == "userWant":
-            self.updateWeight(self.response_list)
-            searching = f"{arg['artist']},{arg['song']}"
-            self.music_player.user_want(searching)
+            try:
+                self.updateWeight(self.emo2play[0])
+                searching = f"{arg['artist']},{arg['song']}"
+                self.music_player.user_want(searching)
+            except:
+                print("님이 원하는 노래는 없으셈")
         elif ctrl == "previous":
             self.music_player.previous()
         elif ctrl == "volumn_up" or "volumn_down":
@@ -103,6 +111,6 @@ class RecMusic:
         up_columns = columns[2:]
         update_query = f"UPDATE TB_MUSIC_FEATURES SET "
         update_query += ", ".join([f"{up_columns[i]} = {update_value[0][i]}" for i in range(len(up_columns))])
-        update_query += f" WHERE USER_ID = '{self.user_id}' AND EMOTION_VAL = '{self.response_list[0]['emotion']}'"
+        update_query += f" WHERE USER_ID = '{self.user_id}' AND EMOTION_VAL = '{self.emo2play[0][0]['emotion']}'"
         self.conn.sqlquery(update_query)
         

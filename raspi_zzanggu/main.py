@@ -34,7 +34,6 @@ def main():
                                model_file_path=os.environ['PORCUPINE_MODEL_FILE_PATH'],
                                sensitivity=1)
     taskClassifier = TaskClassifier(api_key=os.environ['OPENAI_API_KEY_CLASS'], temp=0.5, max_tokens=100)  ## 분류 llm 객체
-    # taskClassifier2 = TaskClassifierThread(api_key=os.environ['OPENAI_API_KEY_CLASS'],event=Event(), temp=0.5, max_tokens=100)
     convGen = ConvGenThread(convGenEvent, api_key=os.environ['OPENAI_API_KEY_CONV'], temp=1.2, max_tokens=100 )  ## 대화생성 llm 객체
     generateOutputAudio = GenerateOutputAudioThread(event=ttsEvent,
                                                     actor_id=os.environ['TYPECAST_ACTOR_ID'], 
@@ -50,9 +49,6 @@ def main():
 
     playConvAudio = PlayAudio(input_q=generateOutputAudio.output_queue)
     convGen.set_output_queue(generateOutputAudio.input_queue)
-    # emotionModel.set_output_queue(recMusic.input_queue)
-    # recMusic.set_input_queue(emotionModel.output_queue)
-    # recMusic.start()
 
     convGen.start()
     generateOutputAudio.start()
@@ -104,11 +100,13 @@ def main():
             # userInputIn, user_input_text, user_input_audio = True, "짱구야 다음 노래 틀어줘" , "./wav/userSentence.wav"
             # print("userInput in")            
 
+            ## 노이즈 받았을시 무시
+            if user_input_text == "noise" :
+                continue
             ## 일정 시간동안 말 안했을떄. 아웃.
-            if not userInputIn :
+            elif not userInputIn:
                 ## TODO : arduino serial 신호 전송 (off / sleep)
                 break
-            
             ## 유저가 음성을 받았을 때
             else :
                 # 쓰레드 시작

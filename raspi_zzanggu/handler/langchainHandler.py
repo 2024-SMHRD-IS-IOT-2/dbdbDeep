@@ -173,17 +173,7 @@ class TaskClassifier:
 
 
 ####### langchain tool calling ########
-# @tool
-# def recommend_music(emotion:str, ctrl:str)->int:
-#     """
-#         check if user ask for the music recommendation, or ask not to recommend.
-#         based on the user input, determine user's emotion from [Happy, Angry, Neutral, Sad]
-#         emotion value is Neutral by default
-#         RECOMMEND_NOW = "recommendNow"
-#         DONT_RECOMMEND = "dontRecommend"
 
-#     """
-#     return TASK.MUSIC_RECOMMEND
 
 @tool
 def normal_conversation(isConv:bool)->int:
@@ -199,16 +189,17 @@ def normal_conversation(isConv:bool)->int:
 def control_music(ctrl:str, artist:str, song:str)->int:
     """
         check what user wants to do with the music.
+        if your input contains music, song, "음악", "노래" do one of the following. 
         also check if user don't want the music recommendation.
         if user ask you to play music with artist and music title, play.
         below is the list of user order
             STOP current music = "stop"
             REPLAY current music = 'replay'
-            PLAY current music = "play"
             back or previous current music = "previous"
             SKIP current music = "skip"
+            PLAY current music = "play"
             Play the next music = "skip"
-            play artist,music title = "userWant"
+            play music of given artist and title = "userWant"
             UP volumn or sound about current music = "volumn_up"
             DOWN volumn or sound about current music = "volumn_down"
             dont recommend music = "dontRecommend"
