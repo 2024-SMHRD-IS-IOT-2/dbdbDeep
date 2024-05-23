@@ -4,6 +4,7 @@ import requests
 import time
 import sounddevice as sd
 import soundfile as sf
+import serial
 
 ## typecast TTS 오디오 생성 쓰레드
 ## 인풋 큐 : flag, emotion, text
@@ -78,8 +79,9 @@ class GenerateOutputAudioThread(Thread):
 ## 음성 출력 대기 클래스
 ## 대화로 분류될 시 출력
 class PlayAudio:
-    def __init__(self, input_q):
+    def __init__(self, input_q, ser:serial):
         self.input_queue = input_q
+        self.ser = ser
 
     # 인풋 큐 클리어 함수 (대화가 아닐 시)
     def clear_input(self):
@@ -108,7 +110,7 @@ class PlayAudio:
                 elif flag == THREAD_STATUS.RUNNING :
                     data, fs = sf.read(filename, dtype='float32')  
                     time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
-                    # TODO : 아두이노 시리얼로 감정 보내기
+                    self.ser.write(emo.encode())
 
                     print("output: play conv audio ", filename)
                     sd.play(data, fs)
@@ -119,7 +121,6 @@ class PlayAudio:
     ## 사전 대답 파일 출력 
     def play_file(self, filename):
         data, fs = sf.read(filename, dtype='float32')  
-        # TODO : 아두이노 시리얼로 감정 보내기
 
         print("output: play sound ", filename)
         sd.play(data, fs)

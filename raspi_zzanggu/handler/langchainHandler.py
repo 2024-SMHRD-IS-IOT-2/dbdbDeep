@@ -52,7 +52,7 @@ class ConvGenThread(Thread, BaseCallbackHandler):
         
     def target(self):
         while True:
-            #!TODO conversation generation 처리
+            # conversation generation 처리
             self.event.wait()
             if not self.input_queue.empty():
                 flag, sentence = self.input_queue.get_nowait()
@@ -126,55 +126,12 @@ class TaskClassifier:
                 task = TASK.IOT_CTRL
             elif ans[0]['name'] == 'control_music' :
                 task = TASK.MUSIC_CTRL
-            # elif ans[0]['name'] == 'recommend_music' :
-            #     task = TASK.MUSIC_RECOMMEND
             
         return task, arg
 
 
 
-## thread version
-# class TaskClassifierThread(Thread):
-#     def __init__(self, api_key, event, temp=0.5, max_tokens=300):
-#         super().__init__(target=self.target,event=event)
-        
-#         self.classify_llm = ChatOpenAI(
-#         api_key=api_key,
-#         temperature=temp, 
-#         max_tokens = max_tokens,
-#         model_name='gpt-4',
-#         ).bind_tools(llm_ctrl_list)
-        
-
-#     def target(self):
-
-#         user_input_text = self.input_queue.get()
-
-#         print(user_input_text)
-#         task = TASK.NONE
-#         ans = self.classify_llm.invoke(user_input_text).tool_calls
-        
-#         arg = []
-#         if len(ans)  == 0 :
-#             task = TASK.CONVERSATION
-#         else :
-#             arg = ans[0]['args']
-#             if ans[0]['name'] == 'control_iot' :
-#                 task = TASK.IOT_CTRL
-#             elif ans[0]['name'] == 'control_music' :
-#                 task = TASK.MUSIC_CTRL
-#             elif ans[0]['name'] == 'recommend_music' :
-#                 task = TASK.MUSIC_RECOMMEND
-            
-#         self.output_queue.put((task,arg))
-#         return task, arg
-
-
-
-
 ####### langchain tool calling ########
-
-
 @tool
 def normal_conversation(isConv:bool)->int:
     """

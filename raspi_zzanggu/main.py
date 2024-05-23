@@ -12,10 +12,11 @@ def main():
     from common.sql import MysqlConn
     from music.recMusic import RecMusic
     from music.musicPlayer import MusicPlayer
-    
+
     from threading import Event
     from dotenv import load_dotenv
     import os
+    import serial
 
     ## init
     load_dotenv('./config/keys.env')
@@ -24,10 +25,12 @@ def main():
     emoEvent = Event()
     
     user_id = os.environ['USER_ID']
+    ser = serial.Serial(os.environ['ARDUINO_PORT'], 115200, timeout=1)
+    ser.reset_input_buffer()
+
     sqlconn = MysqlConn(host=os.environ["MYSQL_HOST"], port=int(os.environ["MYSQL_PORT"]),
                         user=os.environ["MYSQL_USER"], pwd= os.environ["MYSQL_PASSWORD"], 
                         db=os.environ["MYSQL_DATABASE"])
-    
     homeCtrl = HomeCtrl(os.environ['raspHomeIP'])
     inputHandle = InputHandler(access_key=os.environ['PORCUPINE_ACCESS_KEY'],
                                keyword_file_path=os.environ['PORCUPINE_KEYWORD_FILE_PATH'],
@@ -47,7 +50,7 @@ def main():
                         user_id=user_id)
     emotionModel = EmotionModelThread(event=emoEvent, user_id=user_id, conn=sqlconn, recMusic=recMusic)
 
-    playConvAudio = PlayAudio(input_q=generateOutputAudio.output_queue)
+    playConvAudio = PlayAudio(input_q=generateOutputAudio.output_queue, ser=ser)
     convGen.set_output_queue(generateOutputAudio.input_queue)
 
     convGen.start()
@@ -70,16 +73,22 @@ def main():
         ## 대화파일 인덱스 리셋
         wavInd = 0
 
+        ser.write(b"clean")
+
         ## 키워드 인식
         inputHandle.recognize_keyword()
         ## wakeup sound 
         playConvAudio.play_file('./wav/wakeupSound.wav')
-        ## TODO : arduino serial 신호 전송 (normal)
+        
     
 
         ############### 대화 사이클
         while True :
 
+
+            ## 노말 감정 표현
+            ser.write(b"normal-4")
+            
             ## 음악 추천
             if recMusic.isMusicReady() :
                 print("main: music is ready")
@@ -105,7 +114,6 @@ def main():
                 continue
             ## 일정 시간동안 말 안했을떄. 아웃.
             elif not userInputIn:
-                ## TODO : arduino serial 신호 전송 (off / sleep)
                 break
             ## 유저가 음성을 받았을 때
             else :
@@ -130,7 +138,6 @@ def main():
                 ## 대화로 분류됐을 시 준비돼있는 오디오 출력
                 if task == TASK.CONVERSATION:
                     ## || 완료 ||
-                    ## TODO : 성능향상
                     print("main: task=conversation", arg)
                     playConvAudio.play_all_conv_file()
                     print("main: conv done")
