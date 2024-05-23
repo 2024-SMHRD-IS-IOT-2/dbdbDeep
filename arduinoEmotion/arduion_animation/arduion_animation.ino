@@ -118,13 +118,14 @@ unsigned char angryRC[][8] = {
 };
 
 
-
-
-int row, col, i, j;
+int i, j;
  
-void clean(){                       // 전체led를 꺼주는 함수
+void clean(){
   for(int i = 0; i < 3; i++)
-    lc.clearDisplay(i);// clear screen
+  {
+    lc.clearDisplay(i);
+    lcR.clearDisplay(i);
+  }
 }
 
 
@@ -148,7 +149,12 @@ void loop(){
     input = Serial.readStringUntil('\n');
   }  
 
-  if (input=="normal-4"){
+
+  if (input == "sleep"){
+    clean();
+  }
+
+  else if (input=="normal-4"){
     for (i = 0; i<6; i++)
     {
       for (j = 0; j<8; j++)
