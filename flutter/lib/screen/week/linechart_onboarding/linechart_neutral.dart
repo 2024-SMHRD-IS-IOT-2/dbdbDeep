@@ -96,7 +96,7 @@ class _Neutral_linechartState extends State<Neutral_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                        color: Color(0xFF81C784),
+                        color: Colors.green,
                         width: 4
                     )
                   ],

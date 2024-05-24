@@ -96,7 +96,7 @@ class _Happiness_linechartState extends State<Happiness_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                      color: Color(0xFFFF80AB), //라인의 색상을 지정
+                      color: Colors.yellow, //라인의 색상을 지정
                       width: 4 //라인의 두께를 기본2
 
                     )

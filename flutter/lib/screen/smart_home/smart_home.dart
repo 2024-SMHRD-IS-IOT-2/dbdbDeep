@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 // Dio 인스턴스 생성
 final dio = Dio();
 // 서버 URL
-final serverUrl = 'http://220.80.165.38:5000';
+final serverUrl = 'http://211.48.213.203:5000';
 
 class SmartHome extends StatefulWidget {
   const SmartHome({Key? key}) : super(key: key);

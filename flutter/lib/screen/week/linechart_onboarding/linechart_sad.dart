@@ -96,7 +96,7 @@ class _Sadness_linechartState extends State<Sadness_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                        color: Color(0xFF9575CD),
+                        color: Colors.blue,
                         width: 4
                     )
                   ],

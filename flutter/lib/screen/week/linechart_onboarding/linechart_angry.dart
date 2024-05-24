@@ -92,7 +92,7 @@ class _Angry_linechartState extends State<Angry_linechart> {
                           ),
                         ),
                       markerSettings: MarkerSettings(isVisible: true),
-                        color: Color(0xFFB71C1C),
+                        color: Colors.red,
                         width: 4
                     )
                   ],
