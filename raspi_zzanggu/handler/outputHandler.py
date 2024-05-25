@@ -1,4 +1,4 @@
-from common.thread import Thread, THREAD_STATUS
+from common.process import MyProcess, PROCESS_STATUS
 import os
 import requests 
 import time
@@ -9,41 +9,42 @@ import serial
 ## typecast TTS 오디오 생성 쓰레드
 ## 인풋 큐 : flag, emotion, text
 ## 아웃풋 큐 : flag, emo, filename
-class GenerateOutputAudioThread(Thread):
-    def __init__(self, event, actor_id, api_key):
-        super().__init__(target=self.target, event=event)
+class GenerateOutputAudioProcess(MyProcess):
+    def __init__(self, actor_id, api_key):
+        super().__init__(target=self.target)
         self.ACTOR_ID = actor_id
         self.API_KEY = api_key
         self.cnt = 0
 
     ## 쓰레드 함수
-    def target(self):
+    def target(self, ev):
         while True:
-            self.event.wait()
+            ev.wait()
             if not self.input_queue.empty():
                 flag, emo, text = self.input_queue.get_nowait()
                 self.set_status(flag)
-                if flag == THREAD_STATUS.FINISH:
-                    self.push_output(flag, "", "")
+                if flag == PROCESS_STATUS.FINISH:
                     break
                 
                 # 대화 종료시 파일카운터 초기화
-                elif flag == THREAD_STATUS.DONE :
+                elif flag == PROCESS_STATUS.DONE :
                     self.cnt = 0
+                    print("TTSgen: TTS create done")
                     self.push_output(flag, "", "")
-
-                    print("output: audio creation thread clear")
-                    self.event.clear() #tts쓰레드 대기모드로
+                    ev.wait()
                 
                 ## TTS 작업
-                elif flag == THREAD_STATUS.RUNNING :
+                elif flag == PROCESS_STATUS.RUNNING :
                     filename = f"./wav/ttsOut{self.cnt}.wav"
                     ## TEST : 미리 생성돼있는 넘들로 대신 출력
-                    time.sleep(1) ## TEST tts 생성 딜레이 
-                    # self.do_tts(text,filename,emo)
-
+                    # time.sleep(1) ## TEST tts 생성 딜레이 
+                    startTime = time.time()
+                    self.do_tts(text,filename,emo)
+                    endTime = time.time()
+                    print(f"TIME TTS : {(endTime-startTime):.2f} second")
+                    print("TTSgen: tts file created : ", filename)
                     self.push_output(flag, emo, filename)
-                    print("output: tts file created : ", filename)
+                    
                     self.cnt+=1
                      
     ## tts 처리함수
@@ -72,7 +73,7 @@ class GenerateOutputAudioThread(Thread):
                     f.write(r.content)
                 break
             else :
-                print("output: wait 0.1sec. processing tts")
+                print("TTSgen: wait 0.1sec. processing tts")
                 time.sleep(0.1)
                     
 
@@ -85,44 +86,48 @@ class PlayAudio:
 
     # 인풋 큐 클리어 함수 (대화가 아닐 시)
     def clear_input(self):
-        while not self.input_queue.empty():
-            flag, _, filename = self.input_queue.get_nowait()
-            if flag == THREAD_STATUS.FINISH or flag == THREAD_STATUS.DONE :
-                break
+        print("clearInput")
+        while True:
+            if not self.input_queue.empty() :
+                flag, _, filename = self.input_queue.get_nowait()
+                if flag == PROCESS_STATUS.FINISH or flag == PROCESS_STATUS.DONE :
+                    break
 
-            try :
-                print("output: remove files")
-                # os.remove(filename)
-            except FileNotFoundError:
-                print("output: 해당 파일을 찾을 수 없음.", filename)
-                break
+                try :
+                    print("PlayAudio: remove file:", filename)
+                    os.remove(filename)
+                except FileNotFoundError:
+                    print("PlayAudio: 해당 파일을 찾을 수 없음.", filename)
+
 
     def play_all_conv_file(self):
         while True:
             if not self.input_queue.empty():
                 flag, emo, filename = self.input_queue.get_nowait()
-                if flag == THREAD_STATUS.FINISH:
+                print("playAllConv: ",flag, emo, filename)
+                if flag == PROCESS_STATUS.FINISH:
                     break
-                elif flag == THREAD_STATUS.DONE :
-                    print("output: all audio played")
+                elif flag == PROCESS_STATUS.DONE :
+                    print("PlayAudio: all audio played")
                     break
                 
-                elif flag == THREAD_STATUS.RUNNING :
+                elif flag == PROCESS_STATUS.RUNNING :
                     data, fs = sf.read(filename, dtype='float32')  
-                    time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
+                    time.sleep(0.1) ## 문장 사이사이 숨쉴 틈을..
                     self.ser.write(emo.encode())
 
-                    print("output: play conv audio ", filename)
+                    print("PlayAudio: play conv audio ", filename)
                     sd.play(data, fs)
                     status = sd.wait()  # Wait until file is done playing
-                    # os.remove(filename) # remove file after playing
+                    os.remove(filename) # remove file after playing
+                    print("removefile:", filename)
                     time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
 
     ## 사전 대답 파일 출력 
     def play_file(self, filename):
         data, fs = sf.read(filename, dtype='float32')  
 
-        print("output: play sound ", filename)
+        print("PlayAudio: play sound ", filename)
         sd.play(data, fs)
         status = sd.wait()  # Wait until file is done playing
         time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..

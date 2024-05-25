@@ -23,8 +23,6 @@ class InputHandler:
                 self.DEVICE_INDEX = i
                 print(f"mic at index {i} detected")
                 break
-            
-
 
     
     ## 키워드 인식
@@ -77,6 +75,7 @@ class InputHandler:
                                   '--keyword_paths', self.PORCU_KEYWORD_FILE_PATH, 
                                   '--model_path', self.PORCU_MODEL_FILE_PATH])
 
+
         if args.show_audio_devices:
             for i, device in enumerate(PvRecorder.get_available_devices()):
                 print('Device %d: %s' % (i, device))
@@ -102,7 +101,7 @@ class InputHandler:
                 library_path=args.library_path,
                 model_path=args.model_path,
                 keyword_paths=keyword_paths,
-                sensitivities=args.sensitivities)
+                sensitivities=args.sensitivities)           
             
             
         except pvporcupine.PorcupineInvalidArgumentError as e:
@@ -135,8 +134,8 @@ class InputHandler:
 
         recorder = PvRecorder(
             frame_length=porcupine.frame_length,
-            device_index=args.audio_device_index
-#             device_index = self.DEVICE_INDEX
+            # device_index=args.audio_device_index
+            device_index = self.DEVICE_INDEX
             
             )
         self.DEVICE_INDEX = args.audio_device_index

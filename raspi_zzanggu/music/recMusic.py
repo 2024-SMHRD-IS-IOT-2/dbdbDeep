@@ -2,21 +2,13 @@ import pandas as pd
 from sklearn.preprocessing import normalize
 from pinecone import Pinecone
 from common.sql import MysqlConn
-from common.thread import Thread, THREAD_STATUS
 from enum import Enum
 from music.musicPlayer import MusicPlayer
 
-class MUSIC_CTRL(Enum):
-    STOP = 0
-    PAUSE = 1
-    PLAY = 2
-    SKIP = 3
-    CUR_MUSIC_INFO = 4
-    RECOMMEND_NOW = 5
-    DONT_RECOMMEND = 6
+
 
 class RecMusic:
-    def __init__(self, PINECONE_API_KEY,sqlconn:MysqlConn,music_player:MusicPlayer,user_id):
+    def __init__(self, PINECONE_API_KEY,sqlconn:MysqlConn,music_player:MusicPlayer,user_id, minNumRec):
         self.pc = Pinecone(api_key=PINECONE_API_KEY)
         self.conn = sqlconn
         self.response_list = []
@@ -25,6 +17,7 @@ class RecMusic:
         self.user_id = user_id
         self.dontRecommend = False
         self.idx = 0
+        self.minNumRec = minNumRec
 
     def emo_2_music(self,emo):
         query = "SELECT * FROM TB_MUSIC_FEATURES WHERE USER_ID = %s AND EMOTION_VAL = %s"
@@ -48,11 +41,7 @@ class RecMusic:
         print("isMusicReady???")
         temp = self.music_player.sp.current_user_playing_track()
 
-        print("test:", self.dontRecommend, len(self.response_list))
-
-
-
-        if not self.dontRecommend and len(self.response_list) > 1 :
+        if not self.dontRecommend and len(self.response_list) > self.minNumRec :
             if temp == None :
                 return True
             elif temp['is_playing'] :

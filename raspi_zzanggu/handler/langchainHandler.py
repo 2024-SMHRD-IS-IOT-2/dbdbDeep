@@ -1,10 +1,11 @@
-from common.thread import Thread, THREAD_STATUS
+from common.process import MyProcess, PROCESS_STATUS
 from enum import Enum
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationChain
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain.memory import ConversationBufferMemory
+import time
 
 class TASK(Enum):
     NONE = 0
@@ -24,24 +25,12 @@ class IOT_CTRL(Enum):
 ## 계속 돌아감.
 ## 인풋 큐 : flag, userSentence
 ## 아웃풋 큐 : flag, emotion, gptSentence
-class ConvGenThread(Thread, BaseCallbackHandler):
-    def __init__(self, event, api_key, temp = 1.2, max_tokens=500):
-        super().__init__(target=self.target, event=event)
-        
-        self.conversation = ConversationChain(
-            llm= ChatOpenAI(
-                    api_key=api_key,
-                    temperature= temp, 
-                    max_tokens = max_tokens,
-                    model_name='gpt-4',
-                    # model_name='gpt-3.5-turbo',
-                    streaming=True,
-                    callbacks=[self]
-                ),
-            verbose=True,
-            memory=ConversationBufferMemory(),
-        )
-        self.reset_conversation()
+class ConvGenProcess(MyProcess, BaseCallbackHandler):
+    def __init__(self, api_key, temp = 1.2, max_tokens=100):
+        super().__init__(target=self.target)
+        self.api_key = api_key
+        self.temp = temp
+        self.max_tokens = max_tokens
         self.sentenceToken = ""
         ## happy-123, angry-1234, sad-1234, normal-1234
         self.emoList = {'##':'normal-4', 
@@ -50,24 +39,49 @@ class ConvGenThread(Thread, BaseCallbackHandler):
           '**':'sad-4'}
         self.emo = 'normal-4'
         
-    def target(self):
+    def target(self, ev):
+        conversation = ConversationChain(
+            llm= ChatOpenAI(
+                    api_key=self.api_key,
+                    temperature= self.temp, 
+                    max_tokens = self.max_tokens,
+                    model_name='gpt-4',
+                    # model_name='gpt-3.5-turbo',
+                    streaming=True,
+                    callbacks=[self]
+                ),
+            verbose=True,
+            memory=ConversationBufferMemory(),
+        )
+
+        self.reset_conversation(conversation)
+
+
         while True:
+            ev.wait()
             # conversation generation 처리
-            self.event.wait()
             if not self.input_queue.empty():
                 flag, sentence = self.input_queue.get_nowait()
                 self.set_status(flag)
-                if flag == THREAD_STATUS.FINISH:
+                if flag == PROCESS_STATUS.FINISH:
+                    print("convGen : convGenProcess break")
                     self.push_output(flag, "", "")
                     break
-                elif flag == THREAD_STATUS.DONE :
+                elif flag == PROCESS_STATUS.DONE :
                     self.push_output(flag, "", "")
-                    print("convGen thread clear")
-                    self.event.clear()
-                    
-                elif flag == THREAD_STATUS.RUNNING:
-                    self.conversation.predict(input=sentence)
-                
+                    print("convGen : convGen done")
+                    ev.clear()
+                elif flag == PROCESS_STATUS.RESET :
+                    self.reset_conversation(conversation)
+                    print("convGen : conversation reset")
+                    ev.clear()
+
+                elif flag == PROCESS_STATUS.RUNNING:
+                    startTime = time.time()
+                    conversation.predict(input=sentence)
+                    endTime = time.time()
+                    print(f"TIME convGen : {(endTime-startTime):.2f} second")
+
         
     ## 토큰 스트리밍 콜백
     def on_llm_new_token(self, token: str, **kwargs) -> None:
@@ -76,18 +90,17 @@ class ConvGenThread(Thread, BaseCallbackHandler):
             self.emo = self.emoList[token]
         elif token in ['.','?','!'] :
             self.sentenceToken+=token
-            self.push_output(THREAD_STATUS.RUNNING, self.emo, self.sentenceToken)
+            self.push_output(PROCESS_STATUS.RUNNING, self.emo, self.sentenceToken)
             print("convGen: emotion=", self.emo, "sentence token=", self.sentenceToken)
             self.sentenceToken = ""
         else :
             self.sentenceToken += token
-            # print(f"{token}", flush=True)
             
-    def reset_conversation(self) :
-        self.conversation.memory.clear()
-        self.conversation.memory.save_context(
+    def reset_conversation(self, conversation) :
+        conversation.memory.clear()
+        conversation.memory.save_context(
             {"input": """
-            your name is 짱구. and you will speak in korean. 
+            your name is 송이. and you will speak in korean. 
             you will speak friendly like best friend vibe. 
             before you start talking, you will select your emotion from 
             this list [happy, sad, normal, angry]
@@ -99,17 +112,16 @@ class ConvGenThread(Thread, BaseCallbackHandler):
             ^^ -> happy
             @@ -> angry
             ** -> sad
-         """}, {"output": "##알았어. 나는 너의 친한 친구 짱구야."})
+         """}, {"output": "##알았어. 나는 너의 친한 친구 송이야."})
         
         
-## no thread
 class TaskClassifier:
-    def __init__(self, api_key, temp=0.5, max_tokens=300):
+    def __init__(self, api_key, temp=0.5, max_tokens=500):
         self.classify_llm = ChatOpenAI(
         api_key=api_key,
         temperature=temp, 
         max_tokens = max_tokens,
-        model_name='gpt-3.5-turbo',
+        model_name='gpt-4',
         ).bind_tools(llm_ctrl_list)
         
 

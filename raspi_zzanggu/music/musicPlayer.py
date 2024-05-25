@@ -5,14 +5,6 @@ from enum import Enum
 import webbrowser
 import time
 
-class MUSIC_CTRL(Enum):
-    STOP = 0
-    PAUSE = 1
-    PLAY = 2
-    SKIP = 3
-    CUR_MUSIC_INFO = 4
-    RECOMMEND_NOW = 5
-    DONT_RECOMMEND = 6
     
 class MusicPlayer() :
     def __init__(self,SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_URI):
@@ -41,10 +33,8 @@ class MusicPlayer() :
         for i in play_tracks:
             play_track.append(i)           
         devices = self.sp.devices()
-        device_id = None
-        if devices['devices']:
-            device_id = devices['devices'][0]['id']
-        self.sp.start_playback(device_id=device_id,uris = play_track,offset={'position':0})
+        
+        self.sp.start_playback(uris = play_track,offset={'position':0})
     def replay(self):
         current = self.sp.current_user_playing_track()
         if current != None:

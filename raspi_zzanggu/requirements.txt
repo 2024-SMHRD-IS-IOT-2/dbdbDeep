@@ -23,3 +23,4 @@ sentence-transformers
 librosa
 serial
 pyserial
+cryptography
