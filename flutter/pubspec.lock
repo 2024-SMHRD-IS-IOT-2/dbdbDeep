@@ -97,6 +97,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.6"
+  date_picker_widget:
+    dependency: "direct main"
+    description:
+      name: date_picker_widget
+      sha256: "2f94e6876c56be950d1c8a76788296ca05535eb887f72eb72cc8fd5c3c34ffdf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   dio:
     dependency: "direct main"
     description:
