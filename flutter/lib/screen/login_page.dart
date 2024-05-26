@@ -17,8 +17,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController idCon = TextEditingController();
   TextEditingController pwCon = TextEditingController();
-  bool autoLogin = false;
-  bool saveId = false;
 
   @override
   Widget build(BuildContext context) {
@@ -33,72 +31,37 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 30),
+                  SizedBox(height: 1),
                   // 이미지 추가
                   Image.asset(
                     'image/main.png',
-                    height: 250, // 원하는 높이로 설정
+                    height: 200, // 원하는 높이로 설정
                   ),
 
                   SizedBox(height: 15),
-
-                  _buildTextFieldWithIcon(
-                    icon: Icons.account_circle,
-                    label: '아이디',
-                    hintText: '아이디',
-                    controller: idCon,
-                    keyboardType: TextInputType.emailAddress,
-                    width: 350,
-                    height: 55,
-                    iconColor: Colors.amber, // 아이콘 색깔 지정
-                    borderColor: Colors.amber, // 테두리 색깔 지정
-                    fontSize: 14, // 글씨 크기 지정
-                  ),
-
-                  SizedBox(height: 2),
-
-                  _buildTextFieldWithIcon(
-                    icon: Icons.lock,
-                    label: '비밀번호',
-                    hintText: '비밀번호',
-                    controller: pwCon,
-                    obscureText: true,
-                    keyboardType: TextInputType.text,
-                    width: 350,
-                    height: 55,
-                    iconColor: Colors.amber, // 아이콘 색깔 지정
-                    borderColor: Colors.amber, // 테두리 색깔 지정
-                    fontSize: 14, // 글씨 크기 지정
-                  ),
-
-                  SizedBox(height: 1), // 수정: 간격 축소
-
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: autoLogin,
-                        onChanged: (value) {
-                          setState(() {
-                            autoLogin = value ?? false;
-                          });
-                        },
-                        activeColor: Colors.amber, // 체크 박스가 선택되었을 때의 색상 지정
+                  Container(
+                    width: 280, // 원하는 너비로 설정
+                    padding: EdgeInsets.symmetric(vertical: 5), // 위아래 간격 조절
+                    child: TextField(
+                      controller: idCon,
+                      decoration: InputDecoration(
+                        labelText: '아이디를 입력해 주세요',
+                        border: OutlineInputBorder(),
                       ),
-                      Text('자동 로그인', style: TextStyle(color: Colors.black45),),
-
-                      SizedBox(width: 5),
-
-                      Checkbox(
-                        value: saveId,
-                        onChanged: (value) {
-                          setState(() {
-                            saveId = value ?? false;
-                          });
-                        },
-                        activeColor: Colors.amber, // 체크 박스가 선택되었을 때의 색상 지정
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                  ),
+                  Container(
+                    width: 280, // 원하는 너비로 설정
+                    padding: EdgeInsets.symmetric(vertical: 5), // 위아래 간격 조절
+                    child: TextField(
+                      controller: pwCon,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: '비밀번호를 입력해 주세요',
+                        border: OutlineInputBorder(),
                       ),
-                      Text('아이디 저장', style: TextStyle(color: Colors.black45),),
-                    ],
+                    ),
                   ),
                   SizedBox(height: 20), // 수정: 간격 축소
                   Column(
@@ -111,27 +74,26 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.amber,
-                          padding: EdgeInsets.symmetric(horizontal: 155, vertical: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 120, vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                        child: Text('로그인', style: TextStyle(fontSize: 14, color: Colors.black45)),
+                        child: Text('로그인', style: TextStyle(fontSize: 15, color: Colors.white)),
                       ),
                       SizedBox(height: 7), // 로그인 버튼과 회원가입 버튼 사이의 간격
-
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => JoinPage()));
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey,
-                          padding: EdgeInsets.symmetric(horizontal: 150, vertical: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 113, vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                        child: Text('회원가입', style: TextStyle(fontSize: 14, color: Colors.black45)),
+                        child: Text('회원가입', style: TextStyle(fontSize: 15, color: Colors.white)),
                       ),
                     ],
                   ),
@@ -143,60 +105,16 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  Widget _buildTextFieldWithIcon({
-    required IconData icon,
-    required String label,
-    required String hintText,
-    required TextEditingController controller,
-    required TextInputType keyboardType,
-    bool obscureText = false,
-    double? width,
-    double? height,
-    Color? iconColor, // 아이콘 색깔 매개변수 추가
-    Color? borderColor, // 테두리 색깔 매개변수 추가
-    double? fontSize, // 글씨 크기 매개변수 추가
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      padding: EdgeInsets.symmetric(vertical: 5),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-        style: TextStyle(fontSize: fontSize), // 입력된 텍스트의 글씨 크기
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hintText,
-          labelStyle: TextStyle(fontSize: fontSize), // 라벨의 글씨 크기
-          hintStyle: TextStyle(fontSize: fontSize), // 힌트 텍스트의 글씨 크기
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: borderColor ?? Colors.grey), // 기본 테두리 색깔
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: borderColor ?? Colors.blue, width: 2.0), // 포커스 시 테두리 색깔
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: borderColor ?? Colors.grey, width: 1.0), // 기본 테두리 색깔
-          ),
-          prefixIcon: Icon(icon, color: iconColor), // 아이콘 색깔 지정
-        ),
-      ),
-    );
-  }
 }
 
-
-//--------------------------------------------------
 // 로그인 메소드
 void login(id, pw, context) async {
   final conn = await MySQLConnection.createConnection(
-    host: '211.48.228.19',
-    port: 3306,
-    userName: 'xx',
-    password: '1234',
-    databaseName: 'mymy', // optional
+    host: 'project-db-campus.smhrd.com',
+    port: 3307,
+    userName: 'smhrd_dbdbDeep',
+    password: 'dbdb1234!',
+    databaseName: 'smhrd_dbdbDeep', // optional
   );
 
   // 데이터베이스 연결

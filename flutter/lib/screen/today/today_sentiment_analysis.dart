@@ -223,6 +223,9 @@ class Today extends StatelessWidget {
   }
 }
 
+class Today_piechart {
+}
+
 Future<List<Map<String, dynamic>>> dbConnector() async {
   // MySQL 연결 설정
   final conn = await MySQLConnection.createConnection(

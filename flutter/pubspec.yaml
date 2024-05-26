@@ -53,8 +53,6 @@ dependencies:
 
   flutter_dotenv: ^5.1.0
 
-  date_picker_widget: ^0.0.4 #달력위젯
-
 
 dev_dependencies:
   flutter_test:
