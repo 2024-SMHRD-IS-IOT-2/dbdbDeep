@@ -165,7 +165,6 @@ def control_music(ctrl:str, artist:str, song:str)->int:
         check what user wants to do with the music.
         if your input contains "music", "song", "음악", "노래" do one of the following. 
         also check if user don't want the music recommendation.
-        if user ask you to play music with artist and music title, play.
         below is the list of user order
             STOP current music = "stop"
             REPLAY current music = 'replay'
@@ -173,7 +172,6 @@ def control_music(ctrl:str, artist:str, song:str)->int:
             SKIP current music = "skip"
             PLAY current music = "play"
             Play the next music = "skip"
-            play music of given artist and title = "userWant"
             UP volumn or sound about current music = "volumn_up"
             DOWN volumn or sound about current music = "volumn_down"
             dont recommend music = "dontRecommend"
