@@ -27,11 +27,11 @@ class UpdatePage extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(width: 43),
+            SizedBox(width: 26),
             Image.asset(
               'image/sign_up.png',
-              width: 30,
-              height: 30,
+              width: 25,
+              height: 25,
             ),
             Text(
               " 회원정보수정",
@@ -40,7 +40,7 @@ class UpdatePage extends StatelessWidget {
                 fontSize: 22,
               ),
             ),
-            SizedBox(width: 115),
+            SizedBox(width: 87),
           ],
         ),
         centerTitle: true,
@@ -49,6 +49,9 @@ class UpdatePage extends StatelessWidget {
           child: SizedBox(),
         ),
       ),
+
+
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -113,13 +116,14 @@ class UpdatePage extends StatelessWidget {
                 },
               ),
               SizedBox(height: 20),
+
               ElevatedButton(
                 onPressed: () {
                   Update(
                     userId, input_pw.text, input_name.text, input_addr.text, input_tel.text, input_birth.text, context,);
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 135),
+                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 110),
                   backgroundColor: Colors.amber,
                   foregroundColor: Colors.black45,
                   shape: RoundedRectangleBorder(
@@ -201,11 +205,11 @@ class UpdatePage extends StatelessWidget {
 
 void Update(id, pw, name, addr, tel, birth, context,) async {
   final conn = await MySQLConnection.createConnection(
-    host: '211.48.228.19',
-    port: 3306,
-    userName: 'xx',
-    password: '1234',
-    databaseName: 'mymy',
+    host: 'project-db-campus.smhrd.com',
+    port: 3307,
+    userName: 'smhrd_dbdbDeep',
+    password: 'dbdb1234!',
+    databaseName: 'smhrd_dbdbDeep',
   );
 
   // 데이터베이스 연결

@@ -58,7 +58,7 @@ class _SmartHomeState extends State<SmartHome> {
             child: Column(
               children: [
                 _buildDeviceCard(
-                  title: '선풍기',
+                  title: '에어컨',
                   imagePath: 'image/fan.png', // 이미지 파일 경로
                   value: fan,
                   onTap: () {
@@ -67,6 +67,7 @@ class _SmartHomeState extends State<SmartHome> {
                       _ledControl(0, fan ? 100 : 0, 0);
                     });
                   },
+                  textStyle: TextStyle(fontSize: 17.0),
                 ),
                 SizedBox(height: 10), // 간격 추가
                 _buildDeviceCard(
@@ -79,6 +80,7 @@ class _SmartHomeState extends State<SmartHome> {
                       _ledControl(1, livingRoom ? 100 : 0, 0);
                     });
                   },
+                  textStyle: TextStyle(fontSize: 17.0),
                 ),
                 SizedBox(height: 10), // 간격 추가
                 _buildDeviceCard(
@@ -91,8 +93,10 @@ class _SmartHomeState extends State<SmartHome> {
                       _ledControl(2, bed ? 100 : 0, 0);
                     });
                   },
+                  textStyle: TextStyle(fontSize: 17.0),
                 ),
                 SizedBox(height: 10), // 간격 추가
+
                 _buildDeviceCard(
                   title: '화장실',
                   imagePath: 'image/bathroom_led.png',
@@ -103,6 +107,7 @@ class _SmartHomeState extends State<SmartHome> {
                       _ledControl(3, bathroom ? 100 : 0, 0);
                     });
                   },
+                  textStyle: TextStyle(fontSize: 17.0), // 화장실 글씨 크기 조정
                 ),
               ],
             ),
@@ -118,13 +123,14 @@ class _SmartHomeState extends State<SmartHome> {
     String? imagePath,
     required bool value,
     required VoidCallback onTap,
+    TextStyle? textStyle, // 추가된 인자
   }) {
     return InkWell(
       onTap: onTap,
       splashColor: Colors.grey[350], // 클릭 시 노란색 스플래시 효과 설정
       highlightColor: Colors.amber, // 클릭 시 버튼 색을 amber로 설정
       child: Card(
-        margin: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+        margin: EdgeInsets.symmetric(vertical: 1, horizontal: 19),
         // vertical:위아래 간격,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -135,7 +141,7 @@ class _SmartHomeState extends State<SmartHome> {
                 Image.asset(imagePath, width: 40, height: 40) // 이미지 설정
               else if (icon != null)
                 Icon(icon, size: 40.0), // 아이콘 설정
-              Text(title, style: TextStyle(fontSize: 20.0)),
+              Text(title, style: textStyle ?? TextStyle(fontSize: 20.0)), // 기본 글씨 크기 설정
               Switch(
                 value: value,
                 activeColor: Colors.amber, // 활성화 시 amber 색상 설정

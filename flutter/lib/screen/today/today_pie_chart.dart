@@ -63,7 +63,7 @@ class _Today_piechartState extends State<Today_piechart> {
           }, // 차트에 표시할 데이터
           animationDuration: Duration(milliseconds: 800), // 애니메이션 지속 시간
           chartLegendSpacing: 45, // 차트와 범례 사이의 간격
-          chartRadius: MediaQuery.of(context).size.width / 2.5, // 차트 반지름
+          chartRadius: MediaQuery.of(context).size.width / 2.4, // 차트 반지름
           colorList: [
             Colors.yellow, //Color(0xFF81C784),
             Colors.blue,

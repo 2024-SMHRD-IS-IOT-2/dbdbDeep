@@ -1,7 +1,7 @@
 import 'package:final_project/screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:mysql_client/mysql_client.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class JoinPage extends StatelessWidget {
   const JoinPage({Key? key});
 
@@ -16,33 +16,36 @@ class JoinPage extends StatelessWidget {
     TextEditingController input_birth = TextEditingController();
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80.0), // AppBar 높이 조정
-        child: AppBar(
-          title: Row(
-            children: [
-              Image.asset(
-                'image/sign_up.png', // 이미지 경로
-                width: 40,
-                height: 40,
+      appBar: AppBar(
+        backgroundColor: Colors.amber,
+        foregroundColor: Colors.black,
+        elevation: 0.0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(width: 50),
+            Image.asset(
+              'image/sign_up.png',
+              width: 25,
+              height: 25,
+            ),
+            Text(
+              " 회원가입",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 22,
               ),
-              SizedBox(width: 10),
-              Text(
-                '회원가입 페이지',
-                style: TextStyle(color: Colors.black),
-              ),
-            ],
-          ),
-          centerTitle: true,
-          backgroundColor: Colors.amber,
-          foregroundColor: Colors.black,
-          elevation: 0.0,
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(11), // AppBar의 높이 조정
-            child: SizedBox(),
-          ),
+            ),
+            SizedBox(width: 100),
+          ],
+        ),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(11),
+          child: SizedBox(),
         ),
       ),
+
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.all(20.0),
@@ -163,24 +166,24 @@ class JoinPage extends StatelessWidget {
     Function()? onTap,
   }) {
     return TextField(
-        decoration: InputDecoration(
+      decoration: InputDecoration(
         labelText: label,
         hintText: hintText, // hintText 적용
         hintStyle: TextStyle(color: Colors.grey[400]),
-    prefixIcon: Icon(icon, color: Colors.amber),
-    focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(10.0),
-    borderSide: BorderSide(color: Colors.amber, width: 2.0),
-    ),
-    enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(10.0),
-      borderSide: BorderSide(color: Colors.grey),
-    ),
-          filled: true,
-          fillColor: Colors.white,
-          labelStyle: TextStyle(color: textColor), // 텍스트 색상
-          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        prefixIcon: Icon(icon, color: Colors.amber),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: BorderSide(color: Colors.amber, width: 2.0),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle: TextStyle(color: textColor), // 텍스트 색상
+        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      ),
       keyboardType: keyboardType,
       obscureText: obscureText,
       controller: controller,
@@ -196,18 +199,18 @@ class JoinPage extends StatelessWidget {
 
 //회원가입 메소드
 void joinMember(BuildContext context, String id, String pw, String name, String addr, String tel, String birth) async {
-  // await dotenv.load(fileName: 'keys.env');
-  // dynamic host = dotenv.env['MYSQL_HOST'];
-  // dynamic port = dotenv.env['MYSQL_PORT'];
-  // dynamic user = dotenv.env['MYSQL_USER'];
-  // dynamic pw = dotenv.env['MYSQL_PASSWORD'];
-  // dynamic db = dotenv.env['MYSQL_DATABASE'];
+  await dotenv.load(fileName: 'keys.env');
+  dynamic host = dotenv.env['MYSQL_HOST'];
+  dynamic port = dotenv.env['MYSQL_PORT'];
+  dynamic user = dotenv.env['MYSQL_USER'];
+  dynamic pw = dotenv.env['MYSQL_PASSWORD'];
+  dynamic db = dotenv.env['MYSQL_DATABASE'];
   final conn = await MySQLConnection.createConnection(
-    host: '211.48.228.19',
-    port: 3306,
-    userName: 'xx',
-    password: '1234',
-    databaseName: 'mymy', // optional
+    host: host,
+    port: int.parse(port),
+    userName: user,
+    password: pw,
+    databaseName: db,
   );
 
   // 데이터베이스 연결

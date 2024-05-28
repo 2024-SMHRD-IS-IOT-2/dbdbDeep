@@ -66,7 +66,7 @@ class Today extends StatelessWidget {
                         message2 = '일정한 수면 패턴과 식사 시간을 가지고, 하루 일정을 계획해보세요. 이렇게 하면 예상 가능하고 안정감 있는 일상을 유지할 수 있습니다.';
                         break;
                       default:
-                        emotionKor = '데이터없음'; //
+                        emotionKor = '데이터없음';
                         message1 = '오늘 탐지된 감정이 없습니다';
                         message2 = '반려봇 짱구와 여러가지 이야기를 나눠보세요';
                         break;
@@ -78,7 +78,7 @@ class Today extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: Text(
-                            userData['creation_date'], // 생성 날짜 표시
+                            DateFormat('yyyy년MM월dd일').format(DateTime.parse(userData['creation_date'])),
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -98,7 +98,7 @@ class Today extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    Text('오늘의 감정', style: TextStyle(fontSize: 10)), // 오늘의 감정 텍스트
+                                    Text('오늘의 감정', style: TextStyle(fontSize: 10),), // 오늘의 감정 텍스트
                                     SizedBox(height: 8),
                                     Text(
                                       '$emotionKor ${userData['percentage']}%', // 변환된 감정 값과 퍼센트 표시
@@ -120,7 +120,7 @@ class Today extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    Text('오늘의 감정 퍼센트'), // 감정에 따른 메시지 출력
+                                    Text('오늘의 감정 퍼센트',style: TextStyle(color: Colors.grey[600]), ), // 감정에 따른 메시지 출력
                                   ],
                                 ),
                               ),
