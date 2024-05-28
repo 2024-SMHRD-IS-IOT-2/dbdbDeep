@@ -6,6 +6,7 @@ from langchain.chains import ConversationChain
 from langchain_core.callbacks.base import BaseCallbackHandler
 from langchain.memory import ConversationBufferMemory
 import time
+import logging
 
 class TASK(Enum):
     NONE = 0
@@ -14,15 +15,7 @@ class TASK(Enum):
     MUSIC_RECOMMEND = 3
     MUSIC_CTRL = 3
 
-
-class IOT_CTRL(Enum):
-    FAN = 0
-    LIVINGROOM_LED = 1
-    BEDROOM_LED = 2
-
-
-## gpt 대답생성 쓰레드
-## 계속 돌아감.
+## gpt 대답생성 프로세스
 ## 인풋 큐 : flag, userSentence
 ## 아웃풋 큐 : flag, emotion, gptSentence
 class ConvGenProcess(MyProcess, BaseCallbackHandler):
@@ -32,6 +25,7 @@ class ConvGenProcess(MyProcess, BaseCallbackHandler):
         self.temp = temp
         self.max_tokens = max_tokens
         self.sentenceToken = ""
+        ## 현재 TTS 가능 감정.
         ## happy-123, angry-1234, sad-1234, normal-1234
         self.emoList = {'##':'normal-4', 
            '^^':'happy-3',
@@ -45,8 +39,7 @@ class ConvGenProcess(MyProcess, BaseCallbackHandler):
                     api_key=self.api_key,
                     temperature= self.temp, 
                     max_tokens = self.max_tokens,
-                    model_name='gpt-4',
-                    # model_name='gpt-3.5-turbo',
+                    model_name='gpt-4o',
                     streaming=True,
                     callbacks=[self]
                 ),
@@ -58,29 +51,37 @@ class ConvGenProcess(MyProcess, BaseCallbackHandler):
 
 
         while True:
-            ev.wait()
+            # ev.wait()
             # conversation generation 처리
             if not self.input_queue.empty():
-                flag, sentence = self.input_queue.get_nowait()
+                data = self.input_queue.get_nowait()
+                if len(data) == 3:
+                    startTime, flag, sentence = data
+                    self.startTime = startTime
+                else:
+                    flag, sentence = data
+
                 self.set_status(flag)
                 if flag == PROCESS_STATUS.FINISH:
-                    print("convGen : convGenProcess break")
+                    logging.error("convGen : convGenProcess break")
                     self.push_output(flag, "", "")
                     break
                 elif flag == PROCESS_STATUS.DONE :
                     self.push_output(flag, "", "")
-                    print("convGen : convGen done")
-                    ev.clear()
+                    logging.error("convGen : convGen done")
+                    
+                    # ev.clear() # 프로세스 대기모드
                 elif flag == PROCESS_STATUS.RESET :
                     self.reset_conversation(conversation)
-                    print("convGen : conversation reset")
-                    ev.clear()
+                    logging.error("convGen : conversation reset")
+                    
+                    # ev.clear() # 프로세스 대기모드
 
                 elif flag == PROCESS_STATUS.RUNNING:
-                    startTime = time.time()
+                    
                     conversation.predict(input=sentence)
                     endTime = time.time()
-                    print(f"TIME convGen : {(endTime-startTime):.2f} second")
+                    logging.error(f"TIME convGen : {(endTime-startTime):.2f} second")
 
         
     ## 토큰 스트리밍 콜백
@@ -90,7 +91,7 @@ class ConvGenProcess(MyProcess, BaseCallbackHandler):
             self.emo = self.emoList[token]
         elif token in ['.','?','!'] :
             self.sentenceToken+=token
-            self.push_output(PROCESS_STATUS.RUNNING, self.emo, self.sentenceToken)
+            self.push_output(self.startTime, PROCESS_STATUS.RUNNING, self.emo, self.sentenceToken)
             print("convGen: emotion=", self.emo, "sentence token=", self.sentenceToken)
             self.sentenceToken = ""
         else :
@@ -121,7 +122,7 @@ class TaskClassifier:
         api_key=api_key,
         temperature=temp, 
         max_tokens = max_tokens,
-        model_name='gpt-4',
+        model_name='gpt-4o',
         ).bind_tools(llm_ctrl_list)
         
 
@@ -130,8 +131,12 @@ class TaskClassifier:
         ans = self.classify_llm.invoke(user_input_text).tool_calls
         
         arg = []
-        if len(ans)  == 0 or ans[0]['name'] == 'normal_conversation':
+        # if len(ans)  == 0 or ans[0]['name'] == 'normal_conversation':
+        #     task = TASK.CONVERSATION
+        
+        if len(ans)  == 0:
             task = TASK.CONVERSATION
+
         else :
             arg = ans[0]['args']
             if ans[0]['name'] == 'control_iot' :
@@ -158,7 +163,7 @@ def normal_conversation(isConv:bool)->int:
 def control_music(ctrl:str, artist:str, song:str)->int:
     """
         check what user wants to do with the music.
-        if your input contains music, song, "음악", "노래" do one of the following. 
+        if your input contains "music", "song", "음악", "노래" do one of the following. 
         also check if user don't want the music recommendation.
         if user ask you to play music with artist and music title, play.
         below is the list of user order

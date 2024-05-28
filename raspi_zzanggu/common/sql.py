@@ -1,5 +1,6 @@
 import os
 import pymysql
+import logging
 
 class MysqlConn :
     def __init__(self, host, port, user, pwd, db) :
@@ -16,10 +17,9 @@ class MysqlConn :
                 result = cursor.fetchall()
                 self.conn.commit()
                 cursor.close()
+            logging.info("sql success")
         except:
-            print("sql error")
-        finally:
-            print("sql query.")
+            logging.error("sql error")
             
         return result
     

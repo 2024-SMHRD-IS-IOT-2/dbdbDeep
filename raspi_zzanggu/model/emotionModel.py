@@ -7,6 +7,8 @@ from multiprocessing import Queue
 
 import joblib
 import os
+import logging
+import time
 
 
 
@@ -28,7 +30,12 @@ class EmotionModelProcess(MyProcess):
 
         while True:
             if not self.input_queue.empty() :
-                flag, txt, wav = self.input_queue.get_nowait()
+                data = self.input_queue.get_nowait()
+                if len(data) == 4 :
+                    startTime, flag, txt, wav = data
+                else :
+                    flag, txt, wav = data
+
                 self.set_status(flag)
                 if flag == PROCESS_STATUS.FINISH:
                     print("emoModel: EmotionProcess break")
@@ -39,9 +46,10 @@ class EmotionModelProcess(MyProcess):
 
                 elif flag == PROCESS_STATUS.RUNNING : 
                     emo = self.modelEnsemble(model, scaler, txt_embedder, wav, txt)
+                    endTime = time.time()
+                    logging.error(f"TIME emo : {(endTime-startTime):.2f} second")
                     os.remove(wav)
-                    print("emoModel: emotion emo push output")
-                    # recMusic.emo_2_music(emo)
+                    print("emoModel: file removed", wav)
                     emo2rec_q.put(emo)
 
 
@@ -56,14 +64,6 @@ class EmotionModelProcess(MyProcess):
         pred = model.predict(result)
         pred_index = np.argmax(pred) #배열로 나온 각 모델의 4개 클래스 확률 값을 평균화
         emotions_list = ['Angry','Happy','Neutral','Sad']
-        print("emotion predicted : ", emotions_list[pred_index])
+
+        print("emoModel: emotion predicted", emotions_list[pred_index])
         return emotions_list[pred_index] #평균화된 값 중 최대인 값에 해당하는 감정을 return
-
-
-    # ## db 에 감정 저장
-    # def emo_to_DB(self, emotion):
-    #     query = """
-    #                 INSERT INTO TB_EMOTION (USER_ID, EMOTION_VAL) VALUES (%s, %s);
-    #             """
-    #     res = self.conn.sqlquery(query, self.user_id, emotion)
-    #     print("emoModel: emo_to_DB result", res)

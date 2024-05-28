@@ -1,15 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[4]:
-
-
 import librosa
 import numpy as np
-import pandas as pd
 import nlpaug.augmenter.audio as naa 
 from sentence_transformers import SentenceTransformer
-
+import logging
 
 def perceptual_sharpness(audio_path, sr=16000, n_fft=400, hop_length=160):
     # 음원 파일 로드

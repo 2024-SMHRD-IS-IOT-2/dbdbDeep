@@ -7,6 +7,8 @@ import pvporcupine
 import argparse
 import os
 import speech_recognition as sr
+import logging
+import pyaudio
 
 
 class InputHandler:
@@ -18,10 +20,10 @@ class InputHandler:
         self.DEVICE_INDEX = -1
 
         for i, device in enumerate(PvRecorder.get_available_devices()):
-            print('Device %d: %s' % (i, device))
+            logging.info('Device %d: %s' % (i, device))
             if "MAONO" in device :
                 self.DEVICE_INDEX = i
-                print(f"mic at index {i} detected")
+                logging.error(f"mic at index {i} detected")
                 break
 
     
@@ -78,7 +80,7 @@ class InputHandler:
 
         if args.show_audio_devices:
             for i, device in enumerate(PvRecorder.get_available_devices()):
-                print('Device %d: %s' % (i, device))
+                logging.info('Device %d: %s' % (i, device))
             return
 
         if args.keyword_paths is None:
@@ -173,9 +175,9 @@ class InputHandler:
             pass
 
 
+
     ## 사용자 음성 받음
-    def get_user_input(self, filename, inputWaitTime=10, silence_duration=2, silence_threshold=5000):
-        text, audio = "", ""
+    def get_user_input(self, filename, inputWaitTime=10, silence_duration=1.5, silence_threshold=1000):
         
         recorder = PvRecorder(device_index=self.DEVICE_INDEX, frame_length=512)
         audio = []
@@ -204,6 +206,7 @@ class InputHandler:
                     print("talking : user talking start")
                     isTalking = True
                     silenceStart = time.time()
+                    
                 ## 이야기중임. 
                 elif isTalking and (frameChk > silenceThr)  :
                     silenceStart = time.time()
@@ -233,12 +236,12 @@ class InputHandler:
                 userInputString = r.recognize_google(audio, language='ko-KR')
                 return True, userInputString, filename
             except Exception as e :
-                print("error1 = ", e)
+                logging.error("error1 = no user input", e)
                 return False, "noise", ""
                 
                 
         except Exception as e:
-            print("error2 =", e)
+            logging.error("error2 =", e)
         finally:
             recorder.delete()
 

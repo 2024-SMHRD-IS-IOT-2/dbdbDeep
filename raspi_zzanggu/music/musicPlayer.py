@@ -22,9 +22,12 @@ class MusicPlayer() :
     def current_timer(self):
         time = self.sp.current_user_playing_track()
         timer = time['progress_ms'] / 1000
-        return timer      
+        return timer  
+        
     def skip(self):
+
         self.sp.next_track()
+
     def play(self,title):
         music_title = [title[0]['music'][i]['title'] for i in range(len(title[0]))]
         play_track = [self.sp.search(i,limit=1,type='track')['tracks']['items'][0]['uri'] for i in music_title]    
@@ -52,11 +55,14 @@ class MusicPlayer() :
                 self.sp.pause_playback()
         else:
             pass
+        
     def get_info(self):
         info = self.sp.current_user_playing_track()
         artist = info['item']['artists'][0]['name']
         title = info['item']['name']
         return artist, title
+    
+
     def user_want(self,user_want):
         devices = self.sp.devices()
         if devices['devices'] == None:
@@ -74,6 +80,8 @@ class MusicPlayer() :
             play_tracks = [recommend_data['tracks'][i]['external_urls']['spotify'] for i in range(len(recommend_data['tracks']))]
             play_tracks.insert(0,play_track)
             self.sp.start_playback(device_id=devices['devices'][0]['id'],uris = play_tracks,offset={'position':0})
+
+
     def volume(self,ctrl):
         volumn = self.sp.devices()['devices'][0]['volume_percent']
         if ctrl == 'up':

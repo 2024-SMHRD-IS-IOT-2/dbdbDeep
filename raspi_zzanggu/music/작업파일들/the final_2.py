@@ -37,7 +37,7 @@ class RecMusic(Thread):
                     break
                 elif flag == THREAD_STATUS.DONE:
                     self.push_output(flag, "","")
-                    self.event.clear()
+                    # self.event.clear()
 
                 elif flag == THREAD_STATUS.RUNNING: 
                     

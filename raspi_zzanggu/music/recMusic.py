@@ -4,6 +4,7 @@ from pinecone import Pinecone
 from common.sql import MysqlConn
 from enum import Enum
 from music.musicPlayer import MusicPlayer
+import logging
 
 
 
@@ -38,7 +39,7 @@ class RecMusic:
 #         print("리스폰스 리스트 길이: ", len(self.response_list))
                      
     def isMusicReady(self):
-        print("isMusicReady???")
+
         temp = self.music_player.sp.current_user_playing_track()
 
         if not self.dontRecommend and len(self.response_list) > self.minNumRec :
