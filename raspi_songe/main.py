@@ -4,43 +4,33 @@ import logging
 # subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", 'requirements.txt'])
 
 def main():
-    logging.basicConfig(level=logging.ERROR)
-    from handler.langchainHandler import TaskClassifier, ConvGenProcess, TASK
-    from handler.outputHandler import GenerateOutputAudioProcess, PlayAudio, HomeCtrl
+    logging.basicConfig(level=logging.WARN)
+    from handler.langchainHandler import TaskClassifier, ConvGenProcess, ConvGenThread, TASK
+    from handler.outputHandler import GenerateOutputAudioProcess, PlayAudio, IotCtrl
     from handler.inputHandler import InputHandler
     from model.emotionModel import EmotionModelProcess
     from common.process import PROCESS_STATUS
     from common.sql import MysqlConn
+    import threading
     from music.musicPlayer import MusicPlayer
     from music.recMusic import RecMusic
-    from multiprocessing import Event, Queue
 
+    from multiprocessing import Event, Queue
     from dotenv import load_dotenv
     import os
-    import serial
     import time
+    import numpy as np
 
     ## init
     load_dotenv('./config/keys.env')
-    convGenEvent = Event()
+    # convGenEvent = Event()
     ttsEvent = Event()
     emoEvent = Event()
     emo2rec_q = Queue()
 
     user_id = os.environ['USER_ID']
-    try :
-        serL = serial.Serial(os.environ['ARDUINO_PORT_LEFT'], 115200, timeout=1)
-        serR = serial.Serial(os.environ['ARDUINO_PORT_RIGHT'], 115200, timeout=1)
-        serL.reset_input_buffer()
-        serR.reset_input_buffer()
-    except :
-        logging.error("serial not connected")
-        # TEST
-        serL = serial.Serial("COM12", 9600, timeout=1)
-        serR = serL
 
-
-    homeCtrl = HomeCtrl(os.environ['raspHomeIP'])
+    iotCtrl = IotCtrl(os.environ['raspHomeIP'])
     inputHandle = InputHandler(access_key=os.environ['PORCUPINE_ACCESS_KEY'],
                                keyword_file_path=os.environ['PORCUPINE_KEYWORD_FILE_PATH'],
                                model_file_path=os.environ['PORCUPINE_MODEL_FILE_PATH'],
@@ -51,8 +41,16 @@ def main():
                                     max_tokens=200)  
     
     ## 대화생성 프로세스
-    convGen = ConvGenProcess(api_key=os.environ['OPENAI_API_KEY_CONV'], 
+    # convGen = ConvGenProcess(api_key=os.environ['OPENAI_API_KEY_CONV'], 
+    #                          temp=1.2, 
+    #                          max_tokens=200,
+    #                          )  
+
+    ## 대화생성 쓰레드
+    convGenEvent = threading.Event()
+    convGen = ConvGenThread(api_key=os.environ['OPENAI_API_KEY_CONV'], 
                              temp=1.2, 
+                             event=convGenEvent,
                              max_tokens=200,
                              )  
     ## tts 프로세스
@@ -75,23 +73,25 @@ def main():
                     sqlconn= sqlconn,
                     music_player=musicPlayer,
                     user_id=user_id,
-                    minNumRec=5)
+                    minNumRec=1)
    
     ## 감정분석프로세스
     emotionModel = EmotionModelProcess()
 
     # 프로세스 큐 연결
-    playConvAudio = PlayAudio(input_q=generateOutputAudio.output_queue, serL=serL, serR=serR)
+    playConvAudio = PlayAudio(input_q=generateOutputAudio.output_queue, iotCtrl=iotCtrl)
     convGen.set_output_queue(generateOutputAudio.input_queue)
     
     # 프로세스 시작
-    emotionModel.start(emo2rec_q)
-    convGen.start(convGenEvent)
+    # convGen.start(convGenEvent)
+    convGen.start()
+    emotionModel.start(emoEvent, emo2rec_q)
     generateOutputAudio.start(ttsEvent)
 
-    # emoEvent.set()
-    # convGenEvent.set()
-    # ttsEvent.set()
+    
+    convGenEvent.clear()
+    ttsEvent.clear()
+    emoEvent.clear()
 
     isRunning = True
     wavInd = 0
@@ -103,14 +103,13 @@ def main():
         
 
         ## 기존 대화 리셋
-        # convGenEvent.set()
+        convGenEvent.set()
         convGen.push_input(PROCESS_STATUS.RESET, "")
         ## 대화파일 인덱스 리셋
         wavInd = 0
 
         ## 감정
-        serL.write(b"sleep")
-        serR.write(b"sleep")
+        iotCtrl.async_emo("sleep", True)
         
         # ## 키워드 인식
         inputHandle.recognize_keyword()
@@ -123,8 +122,7 @@ def main():
 
 
             ## 노말 감정 표현
-            serL.write(b"normal-4")
-            serR.write(b"normal-4")
+            iotCtrl.async_emo("normal-4", True)
 
             ## 감정 => recMusic
             if not emo2rec_q.empty() :
@@ -135,7 +133,7 @@ def main():
                             INSERT INTO TB_EMOTION (USER_ID, EMOTION_VAL) VALUES (%s, %s);
                         """
                 res = sqlconn.sqlquery(query, user_id, emo)
-                logging.info("emoModel: emo_to_DB result", res)
+                logging.info(f"emoModel: emo_to_DB result {res}")
             
 
             ## 음악 추천
@@ -149,8 +147,8 @@ def main():
             userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(
                     filename=f'./wav/userSentence{wavInd}.wav',
                     inputWaitTime=15, 
-                    silence_duration=0.2, 
-                    silence_threshold=400)
+                    silence_duration=0.5,    ### 문장 종료 대기시간
+                    silence_threshold=800)   
             wavInd+=1
             
             # 시작 타임 로그
@@ -163,8 +161,7 @@ def main():
 
             # 종료를 받았을 때 시스템 종료
             elif user_input_text == "종료":
-                serL.write(b"sleep")
-                serR.write(b"sleep")
+                iotCtrl.async_emo("sleep", True)
                 isRunning = False
                 break
             
@@ -176,14 +173,15 @@ def main():
             else :
                                 
                 # 대기중인 프로세스 시작
-                # convGenEvent.set()
-                # ttsEvent.set()
-
+                convGenEvent.set()
+                ttsEvent.set()
+                emoEvent.set()
 
                 # 감정분석 인풋
                 emotionModel.push_input(getInputStartTIme, PROCESS_STATUS.RUNNING, user_input_text, user_input_audio)
                 emotionModel.push_input(PROCESS_STATUS.DONE, "", "")
                 logging.info("main: emotionModel running") 
+
                 # 대화생성 인풋
                 convGen.push_input(getInputStartTIme, PROCESS_STATUS.RUNNING, user_input_text)
                 convGen.push_input(PROCESS_STATUS.DONE, "")
@@ -194,22 +192,28 @@ def main():
                 logging.info("main: classifier done")
 
                 getInputEndTIme = time.time()
-                logging.error(f"TIME classifier : {(getInputEndTIme-getInputStartTIme):.2f} second")
+                logging.warning(f"TIME classifier : {(getInputEndTIme-getInputStartTIme):.2f} second")
 
                 ## 대화로 분류됐을 시 준비돼있는 오디오 출력
-                logging.error("main: ", task, arg)
+                logging.warning(f"main: {task}, {arg}")
                 if task == TASK.CONVERSATION:
                     playConvAudio.play_all_conv_file()
                     logging.info("main: conv done")
 
                 elif task == TASK.MUSIC_CTRL:
+                    randIdx = int(np.random.rand()*5)
+                    playConvAudio.play_file(f'./wav/ans{randIdx}.wav')
+
                     playConvAudio.clear_input()
                     recMusic.ctrlMusic(arg)
                     
                 ## 스마트홈 조작
                 elif task == TASK.IOT_CTRL:
+                    randIdx = int(np.random.rand()*5)
+                    playConvAudio.play_file(f'./wav/ans{randIdx}.wav')
+
                     playConvAudio.clear_input()
-                    res = homeCtrl.requestCtrl(arg)
+                    res = iotCtrl.requestCtrl(arg)
                     if res == 200 :
                         logging.info("main: iot조작 성공")
                     else : 
@@ -221,10 +225,13 @@ def main():
     
     #     logging.error("exit main loop")
     #     break  # TEST. 메인 프로그램 loop 종료
-    # # 대기중인 쓰레드 종료
-
-    # convGenEvent.set()
-    # ttsEvent.set()
+    
+    
+    
+    # 대기중인 쓰레드 종료
+    convGenEvent.set()
+    ttsEvent.set()
+    emoEvent.set()
 
     convGen.push_input(PROCESS_STATUS.FINISH, "")
     convGen.finish()
@@ -232,7 +239,7 @@ def main():
     emotionModel.push_input(PROCESS_STATUS.FINISH, "", "")
     emotionModel.finish()
     sqlconn.connClose()
-    logging.error("main: Program End")
+    logging.warning("main: Program End")
 
 
 if __name__ == "__main__":

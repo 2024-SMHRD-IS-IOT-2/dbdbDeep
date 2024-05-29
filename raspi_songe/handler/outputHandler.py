@@ -8,6 +8,7 @@ import serial
 import asyncio, aiohttp
 import logging
 
+
 ## typecast TTS 오디오 생성 쓰레드
 ## 인풋 큐 : flag, emotion, text
 ## 아웃풋 큐 : flag, emo, filename
@@ -32,7 +33,7 @@ class GenerateOutputAudioProcess(MyProcess):
     async def async_target(self, ev):
         self.session = aiohttp.ClientSession()
         while True:
-            # ev.wait()
+            ev.wait()
             if not self.input_queue.empty():
                 data = self.input_queue.get_nowait()
                 if len(data) == 4:
@@ -48,7 +49,7 @@ class GenerateOutputAudioProcess(MyProcess):
                     self.cnt = 0
                     logging.info("TTSgen: TTS create done")
                     self.push_output(flag, "", "")
-                    # ev.wait()
+                    ev.clear()
 
                 ## TTS 작업
                 elif flag == PROCESS_STATUS.RUNNING:
@@ -58,7 +59,7 @@ class GenerateOutputAudioProcess(MyProcess):
                     # startTime = time.time()
                     status = await self.do_async_tts(text, filename, emo)
                     endTime = time.time()
-                    logging.error(f"TIME TTS : {(endTime-startTime):.2f} second")
+                    logging.warning(f"TIME TTS : {(endTime-startTime):.2f} second")
                     
                     if status == True :
                         logging.info(f"TTSgen: tts file created : {filename}")
@@ -85,7 +86,7 @@ class GenerateOutputAudioProcess(MyProcess):
             if r.status == 200:  # 요청 성공
                 speak_url = (await r.json())["result"]["speak_v2_url"]
             else:  # 요청 실패
-                logging.error("실패 상태 코드:", r.status)
+                logging.warning(f"실패 상태 코드: {r.status}")
                 return False
 
         # polling the speech synthesis result
@@ -111,7 +112,7 @@ class GenerateOutputAudioProcess(MyProcess):
     # # 동기 프로세스 함수
     def target(self, ev):
         while True:
-            # ev.wait()
+            ev.wait()
             if not self.input_queue.empty():
                 data = self.input_queue.get_nowait()
                 if len(data) == 4:
@@ -128,7 +129,7 @@ class GenerateOutputAudioProcess(MyProcess):
                     self.cnt = 0
                     print("TTSgen: TTS create done")
                     self.push_output(flag, "", "")
-                    ev.wait()
+                    ev.clear()
                 
                 ## TTS 작업
                 elif flag == PROCESS_STATUS.RUNNING :
@@ -177,10 +178,10 @@ class GenerateOutputAudioProcess(MyProcess):
 ## 음성 출력 대기 클래스
 ## 대화로 분류될 시 출력
 class PlayAudio:
-    def __init__(self, input_q, serL:serial, serR:serial):
+    def __init__(self, input_q, iotCtrl):
         self.input_queue = input_q
-        self.serL = serL
-        self.serR = serR
+        self.iotCtrl = iotCtrl
+
 
     # 인풋 큐 클리어 함수 (대화가 아닐 시)
     def clear_input(self):
@@ -190,17 +191,17 @@ class PlayAudio:
                 if flag == PROCESS_STATUS.FINISH or flag == PROCESS_STATUS.DONE :
                     break
                 try :
-                    logging.error("PlayAudio: remove file:", filename)
+                    logging.warning(f"PlayAudio: remove file: {filename}")
                     os.remove(filename)
                 except FileNotFoundError:
-                    logging.error("PlayAudio: 해당 파일을 찾을 수 없음.", filename)
+                    logging.warning(f"PlayAudio: 해당 파일을 찾을 수 없음.{filename}")
 
 
     def play_all_conv_file(self):
         while True:
             if not self.input_queue.empty():
                 flag, emo, filename = self.input_queue.get_nowait()
-                logging.info("playAllConv: ",flag, emo, filename)
+                logging.info(f"playAllConv: {flag}, {emo}, {filename}")
                 if flag == PROCESS_STATUS.FINISH:
                     break
                 elif flag == PROCESS_STATUS.DONE :
@@ -209,31 +210,32 @@ class PlayAudio:
                 
                 elif flag == PROCESS_STATUS.RUNNING :
                     data, fs = sf.read(filename, dtype='float32')  
-                    time.sleep(0.2) ## 문장 사이사이 숨쉴 틈을..
-                    self.serL.write(emo.encode())
-                    self.serR.write(emo.encode())
+                    time.sleep(0.1) ## 문장 사이사이 숨쉴 틈을..
+                    self.iotCtrl.async_emo(emo, True)
 
-                    logging.info("PlayAudio: play conv audio ", filename)
+                    logging.info(f"PlayAudio: play conv audio {filename}")
                     sd.play(data, fs)
                     status = sd.wait()  # Wait until file is done playing
                     os.remove(filename) # remove file after playing
-                    logging.error("removefile:", filename)
+                    time.sleep(0.1) ## 문장 사이사이 숨쉴 틈을..
+                    logging.warning(f"removefile: {filename}")
 
 
     ## 사전 대답 파일 출력 
     def play_file(self, filename):
         data, fs = sf.read(filename, dtype='float32')  
 
-        logging.error("PlayAudio: play sound ", filename)
+        logging.warning(f"PlayAudio: play sound {filename}")
         sd.play(data, fs)
         status = sd.wait()  # Wait until file is done playing
         time.sleep(0.3) ## 문장 사이사이 숨쉴 틈을..
                     
 
 
-class HomeCtrl:
+class IotCtrl:
     def __init__(self, addr) :
         self.addr = addr
+        self.session = aiohttp.ClientSession()
 
     def requestCtrl(self, args) :
         url = f"{self.addr}/homectrl"
@@ -249,6 +251,46 @@ class HomeCtrl:
         except:
             logging.error('HomeCtrl: request 오류')
             return(500)
-            
+        
+    ## 비동기 이모션 함수 시작
+    def async_emo(self, emo, sync=False):
+
+        if sync :
+            self.sendEmo(emo)
+        else :
+            asyncio.run(self.async_sendEmo(emo))
+        
+    ## 비동기 이모션 함수
+    async def async_sendEmo(self,emo):
+        url = f"{self.addr}/setEmo"
+        try:
+            r = requests.get(url=url, params=emo)
+            if r.status_code == 200 :
+                logging.info("emoCtrl: 통신 성공")
+                return r.status_code
+            else :
+                logging.error('emoCtrl: 통신 실패')
+                return r.status_code
+        except:
+            logging.error('emoCtrl: request 오류')
+            return(500)
+        
+    ## 동기 이모션 함수
+    def sendEmo(self,emo):
+        url = f"{self.addr}/setEmo"
+        try:
+            r = requests.get(url=url, params=emo)
+            if r.status_code == 200 :
+                logging.info("emoCtrl: 통신 성공")
+                return r.status_code
+            else :
+                logging.error('emoCtrl: 통신 실패')
+                return r.status_code
+        except:
+            logging.error('emoCtrl: request 오류')
+            return(500)
+
+
+
 
 

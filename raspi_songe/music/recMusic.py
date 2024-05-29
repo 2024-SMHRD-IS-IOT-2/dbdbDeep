@@ -76,6 +76,13 @@ class RecMusic:
         elif ctrl =="dontRecommend":
             self.dontRecommend = True
             self.music_player.stop()
+        elif ctrl == "userWant":
+            try:
+                self.updateWeight(self.emo2play[0])
+                searching = f"{arg['artist']},{arg['song']}"
+                self.music_player.user_want(searching)
+            except:
+                print("님이 원하는 노래는 없으셈")
         elif ctrl == "previous":
             self.music_player.previous()
         elif ctrl == "volumn_up" or "volumn_down":
@@ -83,7 +90,6 @@ class RecMusic:
                 self.music_player.volume('up')
             elif ctrl == "volumn_down":
                 self.music_player.volume('down')
-
     def updateWeight(self,response_list):
         if self.music_player != None:
             if len(response_list) != 0:

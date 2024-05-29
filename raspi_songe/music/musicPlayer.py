@@ -1,9 +1,8 @@
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
-from enum import Enum
 import webbrowser
-import time
+
 
     
 class MusicPlayer() :
@@ -16,7 +15,6 @@ class MusicPlayer() :
         ))
         webbrowser.open_new('https://open.spotify.com/')
 
-        
         
     
     def current_timer(self):
@@ -36,8 +34,10 @@ class MusicPlayer() :
         for i in play_tracks:
             play_track.append(i)           
         devices = self.sp.devices()
+        devices_id = devices['devices'][0]['id']
         
-        self.sp.start_playback(uris = play_track,offset={'position':0})
+
+        self.sp.start_playback(device_id=devices_id,uris = play_track,offset={'position':0})
     def replay(self):
         current = self.sp.current_user_playing_track()
         if current != None:
@@ -55,32 +55,6 @@ class MusicPlayer() :
                 self.sp.pause_playback()
         else:
             pass
-        
-    def get_info(self):
-        info = self.sp.current_user_playing_track()
-        artist = info['item']['artists'][0]['name']
-        title = info['item']['name']
-        return artist, title
-    
-
-    def user_want(self,user_want):
-        devices = self.sp.devices()
-        if devices['devices'] == None:
-            webbrowser.open_new('https://open.spotify.com/')
-            time.sleep(1)
-            play_track = self.sp.search(user_want,limit=1,type='track')['tracks']['items'][0]['uri'] 
-            recommend_data = self.sp.recommendations(seed_tracks=[play_track],limit=10)
-            play_tracks = [recommend_data['tracks'][i]['external_urls']['spotify'] for i in range(len(recommend_data['tracks']))]
-            play_tracks.insert(0,play_track)
-            self.sp.start_playback(device_id=devices['devices'][0]['id'],uris = play_tracks,offset={'position':0})
-
-        else:
-            play_track = self.sp.search(user_want,limit=1,type='track')['tracks']['items'][0]['uri'] 
-            recommend_data = self.sp.recommendations(seed_tracks=[play_track],limit=10)
-            play_tracks = [recommend_data['tracks'][i]['external_urls']['spotify'] for i in range(len(recommend_data['tracks']))]
-            play_tracks.insert(0,play_track)
-            self.sp.start_playback(device_id=devices['devices'][0]['id'],uris = play_tracks,offset={'position':0})
-
 
     def volume(self,ctrl):
         volumn = self.sp.devices()['devices'][0]['volume_percent']

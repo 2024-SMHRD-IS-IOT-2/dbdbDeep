@@ -19,7 +19,7 @@ class EmotionModelProcess(MyProcess):
 
     
     # 인풋 큐 : 텍스트, wav
-    def target(self, emo2rec_q:Queue):
+    def target(self, ev, emo2rec_q:Queue):
         model_path = Path('./model/model_05-0.8016.keras' ).absolute()
         scaler_path = Path('./model/sscaler_9.pkl').absolute()
         pre_trained_embed_model = 'jhgan/ko-sroberta-multitask'
@@ -29,6 +29,7 @@ class EmotionModelProcess(MyProcess):
         txt_embedder = gf.text_embedding(model_name = pre_trained_embed_model)
 
         while True:
+            ev.wait()
             if not self.input_queue.empty() :
                 data = self.input_queue.get_nowait()
                 if len(data) == 4 :
@@ -42,12 +43,14 @@ class EmotionModelProcess(MyProcess):
                     break
     
                 elif flag == PROCESS_STATUS.DONE :
+                    if not self.input_queue.empty() :
+                        ev.clear()
                     pass
 
                 elif flag == PROCESS_STATUS.RUNNING : 
                     emo = self.modelEnsemble(model, scaler, txt_embedder, wav, txt)
                     endTime = time.time()
-                    logging.error(f"TIME emo : {(endTime-startTime):.2f} second")
+                    logging.warning(f"TIME emo : {(endTime-startTime):.2f} second")
                     os.remove(wav)
                     print("emoModel: file removed", wav)
                     emo2rec_q.put(emo)

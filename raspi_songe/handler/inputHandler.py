@@ -23,7 +23,7 @@ class InputHandler:
             logging.info('Device %d: %s' % (i, device))
             if "MAONO" in device :
                 self.DEVICE_INDEX = i
-                logging.error(f"mic at index {i} detected")
+                logging.warning(f"mic at index {i} detected")
                 break
 
     
@@ -206,7 +206,7 @@ class InputHandler:
                     print("talking : user talking start")
                     isTalking = True
                     silenceStart = time.time()
-                    
+
                 ## 이야기중임. 
                 elif isTalking and (frameChk > silenceThr)  :
                     silenceStart = time.time()
@@ -236,12 +236,12 @@ class InputHandler:
                 userInputString = r.recognize_google(audio, language='ko-KR')
                 return True, userInputString, filename
             except Exception as e :
-                logging.error("error1 = no user input", e)
+                logging.warning(f"error1 = no user input {e}")
                 return False, "noise", ""
                 
                 
         except Exception as e:
-            logging.error("error2 =", e)
+            logging.warning(f"error2 = {e}")
         finally:
             recorder.delete()
 
