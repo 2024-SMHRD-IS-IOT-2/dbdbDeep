@@ -111,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.amber,
-                          padding: EdgeInsets.symmetric(horizontal: 155, vertical: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 130, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey,
-                          padding: EdgeInsets.symmetric(horizontal: 150, vertical: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 123, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -192,11 +192,11 @@ class _LoginPageState extends State<LoginPage> {
 // 로그인 메소드
 void login(id, pw, context) async {
   final conn = await MySQLConnection.createConnection(
-    host: '211.48.228.19',
-    port: 3306,
-    userName: 'xx',
-    password: '1234',
-    databaseName: 'mymy', // optional
+    host: 'project-db-campus.smhrd.com',
+    port: 3307,
+    userName: 'smhrd_dbdbDeep',
+    password: 'dbdb1234!',
+    databaseName: 'smhrd_dbdbDeep',
   );
 
   // 데이터베이스 연결
@@ -228,3 +228,4 @@ void login(id, pw, context) async {
     );
   }
 }
+

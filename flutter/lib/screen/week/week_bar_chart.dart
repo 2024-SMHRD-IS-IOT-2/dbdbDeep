@@ -65,14 +65,14 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
                 padding: const EdgeInsets.all(10),
                 children: [
                   AspectRatio(
-                    aspectRatio: 10 / 9,
+                    aspectRatio: 10 / 11.5,
                     child: DChartBarCustom(
                       showMeasureLine: true,
                       showDomainLine: true,
                       showDomainLabel: true,
                       showMeasureLabel: true,
-                      spaceBetweenItem: 19,
-                      spaceMeasureLinetoChart: 5,
+                      spaceBetweenItem:10,
+                      spaceMeasureLinetoChart:5,
                       radiusBar: const BorderRadius.only(
                         topLeft: Radius.circular(8),
                         topRight: Radius.circular(8),
@@ -82,10 +82,10 @@ class _Week_bar_chartState extends State<Week_bar_chart> {
 
 
                       listData: [
-                        DChartBarDataCustom(value: happyVal, label: '기쁨', color: Colors.yellow, showValue: true, valueStyle: TextStyle(color: Colors.black54, fontSize: 16)),
-                        DChartBarDataCustom(value: sadVal, label: '슬픔', color: Colors.blue, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 16)),
-                        DChartBarDataCustom(value: angryVal, label: '분노', color: Colors.red, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 16)),
-                        DChartBarDataCustom(value: neutralVal, label: '안정',  color: Colors.green, showValue: true, valueStyle: TextStyle(color: Colors.black54, fontSize: 16)),
+                        DChartBarDataCustom(value: happyVal, label: '기쁨', color: Colors.yellow, showValue: true, valueStyle: TextStyle(color: Colors.black54, fontSize: 14)),
+                        DChartBarDataCustom(value: sadVal, label: '슬픔', color: Colors.blue, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 14)),
+                        DChartBarDataCustom(value: angryVal, label: '분노', color: Colors.red, showValue: true, valueStyle: TextStyle(color: Colors.white, fontSize: 14)),
+                        DChartBarDataCustom(value: neutralVal, label: '안정',  color: Colors.green, showValue: true, valueStyle: TextStyle(color: Colors.black54, fontSize: 14)),
                       ],
                     ),
                   ),
@@ -113,19 +113,23 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
   var result = await conn.execute("""
     SELECT 
     EMOTION_VAL, 
-    percentage
+    percentage,
+    DATE_SUB(CURDATE(), INTERVAL 7 DAY) AS start_date,
+    DATE_SUB(CURDATE(), INTERVAL 1 DAY) AS end_date
 FROM (
     SELECT 
         EMOTION_VAL, 
         ROUND((COUNT(*) / (SELECT COUNT(*) FROM TB_EMOTION 
                           WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-                          AND EMOTION_AT < CURDATE()) * 100), 1) AS percentage
+                          AND EMOTION_AT < DATE_SUB(CURDATE(), INTERVAL 1 DAY)) * 100), 1) AS percentage
     FROM TB_EMOTION
     WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-      AND EMOTION_AT < CURDATE()
+      AND EMOTION_AT < DATE_SUB(CURDATE(), INTERVAL 1 DAY)
     GROUP BY EMOTION_VAL
     ORDER BY COUNT(*) DESC
-) AS ranked_data;
+) AS ranked_data
+
+ORDER BY percentage DESC;
   """);
 
   List<Map<String, dynamic>> userDataList = [];

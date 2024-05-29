@@ -1,6 +1,7 @@
 import 'package:final_project/screen/week/linechart_onboarding/onboarding.dart';
 import 'package:final_project/screen/week/week_bar_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 
@@ -79,7 +80,7 @@ class Week extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: Text(
-                            '${userData['start_date']} ~ ${userData['end_date']} ',
+                            '${DateFormat('yyyy년MM월dd일').format(DateTime.parse(userData['start_date']))} ~ ${DateFormat('yyyy년MM월dd일').format(DateTime.parse(userData['end_date']))}',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -241,20 +242,21 @@ Future<List<Map<String, dynamic>>> dbConnector() async {
     EMOTION_VAL, 
     percentage,
     DATE_SUB(CURDATE(), INTERVAL 7 DAY) AS start_date,
-    CURDATE() AS end_date
+    DATE_SUB(CURDATE(), INTERVAL 1 DAY) AS end_date
 FROM (
     SELECT 
         EMOTION_VAL, 
         ROUND((COUNT(*) / (SELECT COUNT(*) FROM TB_EMOTION 
                           WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-                          AND EMOTION_AT < CURDATE()) * 100), 1) AS percentage
+                          AND EMOTION_AT < DATE_SUB(CURDATE(), INTERVAL 1 DAY)) * 100), 1) AS percentage
     FROM TB_EMOTION
     WHERE EMOTION_AT >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-      AND EMOTION_AT < CURDATE()
+      AND EMOTION_AT < DATE_SUB(CURDATE(), INTERVAL 1 DAY)
     GROUP BY EMOTION_VAL
     ORDER BY COUNT(*) DESC
     LIMIT 1
 ) AS ranked_data
+
 ORDER BY percentage DESC;
   """);
 

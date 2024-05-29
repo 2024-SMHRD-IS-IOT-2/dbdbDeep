@@ -19,6 +19,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, //디버그 표시없애기
 
+      theme: ThemeData(
+        fontFamily: 'Gmarket'
+      ),
+
       home:LoginPage(),
 
       //Bottom(),

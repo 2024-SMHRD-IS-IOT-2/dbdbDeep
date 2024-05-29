@@ -35,7 +35,7 @@ class Mypage extends StatelessWidget {
                     ),
                     SizedBox(width: 7), // 간격 추가
                     Text(
-                      '개인 정보', // 화면 상단에 표시될 제목
+                      '회원 개인 정보', // 화면 상단에 표시될 제목
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey[700]),
                     ),
                   ],
@@ -107,7 +107,7 @@ class Mypage extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 130, vertical: 13), // 버튼 내부 여백
+                    padding: EdgeInsets.symmetric(horizontal: 110, vertical: 13), // 버튼 내부 여백
                     backgroundColor: Colors.amber, // 배경색
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12), // 버튼 모서리를 둥글게 설정
@@ -129,7 +129,7 @@ class Mypage extends StatelessWidget {
                       logout(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 61, vertical: 12), // 버튼 내부 여백 horizontal:가로
+                      padding: EdgeInsets.symmetric(horizontal: 52, vertical: 12), // 버튼 내부 여백 horizontal:가로
                       backgroundColor: Colors.grey, // 배경색
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // 버튼 모서리를 둥글게 설정
@@ -146,7 +146,7 @@ class Mypage extends StatelessWidget {
                       // Implement withdrawal logic
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 61, vertical: 12), // 버튼 내부 여백
+                      padding: EdgeInsets.symmetric(horizontal: 52, vertical: 12), // 버튼 내부 여백
                       backgroundColor: Colors.grey, // 배경색
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // 버튼 모서리를 둥글게 설정
@@ -194,7 +194,7 @@ class UserInfoField extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 35.0), // 상하 여백과 좌우 패딩 설정
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 13.0), // 상하 여백과 좌우 패딩 설정
       child: Row(
         children: [
 
