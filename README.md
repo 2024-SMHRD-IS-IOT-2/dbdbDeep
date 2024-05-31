@@ -21,7 +21,8 @@
 <br>
 
 ## ⛏ 기술스택
-![tools_languages](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/9417dec1-fc37-4b3c-9d8b-1d008f8d9337)
+![lang_tool](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/9e45909b-73d8-42e6-9ed4-f6546818fd93)
+
 
 <br>
 
@@ -33,9 +34,10 @@
 
 ## 📌 서비스 흐름도
 
-![service_flow](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/d066ab3d-2e9c-4b21-865c-2ab3e479da70)
+![flow_robot](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/ef297eb8-8a1f-47ca-b63d-93982d247aed)
 
-![service_flow_app](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/2521cb02-fb80-424c-93e4-ad1d403bfc5b)
+
+![flow_app](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/c841df98-d2bd-4502-a28d-ee86c6db0af2)
 
 
 ## 시연영상
@@ -44,17 +46,17 @@ https://youtu.be/U-YOpqj0jIY?si=jHvrZ0vCbVeJEmjY
 
 
 ## 👨‍👩‍👦‍👦 팀원 역할
-![team](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/6cfb328c-547e-402d-90e6-8d967ebc6496)
+![team](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/8ab9deec-7e56-4882-8c76-3b63c02c0dd2)
 
 
 ## 🤾‍♂️ 트러블슈팅
   
 * 문제1<br>
   각 기능들의 테스트 및 통합에 어려움이 있었음.
-![troubleshooting_oop](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/aa1cfefa-3757-4b48-a8ad-e56d6f07ef2c)
+![trouble_oop](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/6d651185-f61d-41ab-bdab-2ead6b0c7877)
 
  
 * 문제2<br>
   로봇의 대답 출력까지의 긴 대기시간
-  ![troubleshotting_multiprocessing](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/63af85a6-4d56-4c9b-b063-7b68fe1d8f71)
+![trouble_multiprocessing](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/7613be3c-401a-4c05-bd1c-565d8b0e17af)
 
