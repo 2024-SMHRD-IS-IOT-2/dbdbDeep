@@ -28,12 +28,6 @@ class MUSIC_CTRL(Enum):
 
 
 
-class RecMusic(Thread):
-    def __init__(self,target,event,PINECONE_API_KEY,sqlconn:MysqlConn,music_player, user_id):
-
-from common.musicPlayer import MusicPlayer
-
-
 
 class RecMusic(Thread):
     def __init__(self,target,event:Event,PINECONE_API_KEY,sqlconn:MysqlConn,music_player:MusicPlayer,user_id):
