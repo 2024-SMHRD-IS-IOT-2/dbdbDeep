@@ -121,9 +121,6 @@ def main():
         while True :
 
 
-            ## 노말 감정 표현
-            iotCtrl.async_emo("normal-4", True)
-
             ## 감정 => recMusic
             if not emo2rec_q.empty() :
                 emo = emo2rec_q.get_nowait()
@@ -135,20 +132,15 @@ def main():
                 res = sqlconn.sqlquery(query, user_id, emo)
                 logging.info(f"emoModel: emo_to_DB result {res}")
             
-
-            ## 음악 추천
-            if recMusic.isMusicReady() :
-                logging.info("main: music is ready")
-                playConvAudio.play_file('./wav/musicRec.wav')
-                recMusic.ctrlMusic({'ctrl':"play"})
-
+            ## 노말 감정 표현
+            iotCtrl.sendEmo("normal-4")
 
             ## 유저 음성 받기
             userInputIn, user_input_text, user_input_audio = inputHandle.get_user_input(
                     filename=f'./wav/userSentence{wavInd}.wav',
-                    inputWaitTime=15, 
-                    silence_duration=0.5,    ### 문장 종료 대기시간
-                    silence_threshold=800)   
+                    inputWaitTime=10, 
+                    silence_duration=1,    ### 문장 종료 대기시간
+                    silence_threshold=900)   
             wavInd+=1
             
             # 시작 타임 로그
@@ -161,7 +153,7 @@ def main():
 
             # 종료를 받았을 때 시스템 종료
             elif user_input_text == "종료":
-                iotCtrl.async_emo("sleep", True)
+                iotCtrl.sendEmo("sleep")
                 isRunning = False
                 break
             
@@ -218,6 +210,13 @@ def main():
                         logging.info("main: iot조작 성공")
                     else : 
                         logging.error("main: iot조작 실패")
+            
+            ## 음악 추천
+            print('is music ready?')
+            if recMusic.isMusicReady() :
+                logging.warning("main: music is ready")
+                playConvAudio.play_file('./wav/musicRec.wav')
+                recMusic.ctrlMusic({'ctrl':"play"})
 
                     
     #         logging.error("exit conversation cycle")

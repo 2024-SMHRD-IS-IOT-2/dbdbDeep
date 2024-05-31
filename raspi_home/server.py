@@ -46,4 +46,4 @@ def getEmo():
 
 
 if __name__ == "__main__" :  
-    app.run(host="172.30.1.50", port=5000)
+    app.run(host="ipaddr", port=5000)

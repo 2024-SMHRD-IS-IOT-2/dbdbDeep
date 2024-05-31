@@ -8,7 +8,7 @@ import argparse
 import os
 import speech_recognition as sr
 import logging
-import pyaudio
+# import pyaudio
 
 
 class InputHandler:

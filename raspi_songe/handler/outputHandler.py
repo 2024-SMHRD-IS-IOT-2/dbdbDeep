@@ -211,7 +211,7 @@ class PlayAudio:
                 elif flag == PROCESS_STATUS.RUNNING :
                     data, fs = sf.read(filename, dtype='float32')  
                     time.sleep(0.1) ## 문장 사이사이 숨쉴 틈을..
-                    self.iotCtrl.async_emo(emo, True)
+                    self.iotCtrl.sendEmo(emo)
 
                     logging.info(f"PlayAudio: play conv audio {filename}")
                     sd.play(data, fs)
@@ -277,9 +277,10 @@ class IotCtrl:
         
     ## 동기 이모션 함수
     def sendEmo(self,emo):
+        param = {'emotion':emo}
         url = f"{self.addr}/setEmo"
         try:
-            r = requests.get(url=url, params=emo)
+            r = requests.get(url=url, params=param)
             if r.status_code == 200 :
                 logging.info("emoCtrl: 통신 성공")
                 return r.status_code

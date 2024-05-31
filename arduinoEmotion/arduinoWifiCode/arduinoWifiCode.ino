@@ -195,11 +195,11 @@ void setMatrix(String input) {
   }
 }
 
-const char* ssid = "SMHRD_강의실C";
-const char* password = "ccccc33333";
+const char* ssid = "wifi";
+const char* password = "pwd";
 
 //Your Domain name with URL path or IP address with path
-String serverName = "http://172.30.1.3:5000";
+String serverName = "ipaddress";
 
 // the following variables are unsigned longs because the time, measured in
 // milliseconds, will quickly become a bigger number than can be stored in an int.

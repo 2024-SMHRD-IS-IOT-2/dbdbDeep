@@ -39,10 +39,11 @@ class RecMusic:
 #         print("리스폰스 리스트 길이: ", len(self.response_list))
                      
     def isMusicReady(self):
-
+        print("musicready1")
         temp = self.music_player.sp.current_user_playing_track()
-
-        if not self.dontRecommend and len(self.response_list) > self.minNumRec :
+        print("musicready2", self.dontRecommend, len(self.response_list), temp)
+        
+        if not self.dontRecommend and len(self.response_list) >= self.minNumRec :
             if temp == None :
                 return True
             elif temp['is_playing'] :
