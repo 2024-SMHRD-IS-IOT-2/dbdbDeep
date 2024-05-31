@@ -38,6 +38,10 @@
 ![service_flow_app](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/2521cb02-fb80-424c-93e4-ad1d403bfc5b)
 
 
+## 시연영상
+https://youtu.be/U-YOpqj0jIY?si=jHvrZ0vCbVeJEmjY
+
+
 
 ## 👨‍👩‍👦‍👦 팀원 역할
 ![team](https://github.com/2024-SMHRD-IS-IOT-2/dbdbDeep/assets/11593416/6cfb328c-547e-402d-90e6-8d967ebc6496)
